@@ -40,7 +40,9 @@ class MainActivity : ComponentActivity() {
         createNotificationChannel()
 
         setContent {
-            TwoScreenApp()
+            TwoScreenApp(
+                onSendNotification = { sendTestNotification() }
+            )
         }
 
         // Тестовое уведомление через 5 секунд с проверкой разрешения
@@ -112,7 +114,7 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-fun TwoScreenApp() {
+fun TwoScreenApp(onSendNotification: () -> Unit) {
     var isFirstScreen by remember { mutableStateOf(true) }
 
     Surface(modifier = Modifier.fillMaxSize(), color = Color.White) {
@@ -124,8 +126,15 @@ fun TwoScreenApp() {
             if (isFirstScreen) {
                 Text("Первый экран", style = MaterialTheme.typography.headlineMedium)
                 Spacer(Modifier.height(20.dp))
+
                 Button(onClick = { isFirstScreen = false }) {
                     Text("Перейти на второй экран")
+                }
+
+                Spacer(Modifier.height(20.dp))
+
+                Button(onClick = { onSendNotification() }) {
+                    Text("Показать уведомление")
                 }
             } else {
                 Text("Второй экран", style = MaterialTheme.typography.headlineMedium)
@@ -137,3 +146,4 @@ fun TwoScreenApp() {
         }
     }
 }
+
