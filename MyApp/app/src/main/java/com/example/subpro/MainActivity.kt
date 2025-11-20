@@ -21,10 +21,11 @@ import androidx.compose.ui.unit.dp
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat
+import java.time.LocalDate
+import java.time.YearMonth
 
 class MainActivity : ComponentActivity() {
 
-    // Регистрируем запрос разрешения
     private val requestPermissionLauncher =
         registerForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted ->
             if (isGranted) sendTestNotification()
@@ -42,7 +43,6 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-    // Функция проверки разрешения и отправки уведомления
     private fun requestNotificationPermissionAndSend() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             if (ContextCompat.checkSelfPermission(
@@ -59,7 +59,6 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-    // Создание канала уведомлений
     private fun createNotificationChannel() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val channel = NotificationChannel(
@@ -75,9 +74,7 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-    // Отправка уведомления
     private fun sendTestNotification() {
-        // Проверяем разрешение прямо перед notify()
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
             ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS)
             != PackageManager.PERMISSION_GRANTED
@@ -105,7 +102,6 @@ class MainActivity : ComponentActivity() {
             e.printStackTrace()
         }
     }
-
 }
 
 @Composable
@@ -115,10 +111,11 @@ fun TwoScreenApp(onSendNotification: () -> Unit) {
     Surface(modifier = Modifier.fillMaxSize(), color = Color.White) {
         Column(
             modifier = Modifier.fillMaxSize(),
-            verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             if (isFirstScreen) {
+                Spacer(Modifier.height(40.dp))
+
                 Text("Первый экран", style = MaterialTheme.typography.headlineMedium)
                 Spacer(Modifier.height(20.dp))
 
@@ -133,13 +130,107 @@ fun TwoScreenApp(onSendNotification: () -> Unit) {
                 }
 
             } else {
-                Text("Второй экран", style = MaterialTheme.typography.headlineMedium)
                 Spacer(Modifier.height(20.dp))
 
                 Button(onClick = { isFirstScreen = true }) {
                     Text("Назад")
                 }
+
+                Spacer(Modifier.height(20.dp))
+
+                CalendarScreen()
             }
         }
     }
 }
+
+/* ==========================
+        КАЛЕНДАРЬ
+   ========================== */
+
+@Composable
+fun CalendarScreen() {
+    var currentMonth by remember { mutableStateOf(YearMonth.now()) }
+
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = Modifier.padding(16.dp)
+    ) {
+        // Шапка календаря
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            Button(onClick = { currentMonth = currentMonth.minusMonths(1) }) {
+                Text("←")
+            }
+
+            Text(
+                text = "${currentMonth.month} ${currentMonth.year}",
+                style = MaterialTheme.typography.titleLarge
+            )
+
+            Button(onClick = { currentMonth = currentMonth.plusMonths(1) }) {
+                Text("→")
+            }
+        }
+
+        Spacer(Modifier.height(16.dp))
+
+        CalendarMonthView(currentMonth)
+    }
+}
+
+@Composable
+fun CalendarMonthView(month: YearMonth) {
+    val days = remember(month) { generateDaysForMonth(month) }
+
+    Row(Modifier.fillMaxWidth()) {
+        listOf("Пн", "Вт", "Ср", "Чт", "Пт", "Сб", "Вс").forEach {
+            Box(
+                modifier = Modifier
+                    .weight(1f)
+                    .padding(4.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(it)
+            }
+        }
+    }
+
+    Spacer(Modifier.height(8.dp))
+
+    days.chunked(7).forEach { week ->
+        Row(Modifier.fillMaxWidth()) {
+            week.forEach { date ->
+                Box(
+                    modifier = Modifier
+                        .weight(1f)
+                        .padding(4.dp)
+                        .height(40.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    if (date != null) {
+                        Text(date.dayOfMonth.toString())
+                    }
+                }
+            }
+        }
+    }
+}
+
+fun generateDaysForMonth(month: YearMonth): List<LocalDate?> {
+    val firstDay = month.atDay(1)
+    val daysInMonth = month.lengthOfMonth()
+
+    val shift = (firstDay.dayOfWeek.value % 7)
+
+    val list: MutableList<LocalDate?> = MutableList(shift) { null }
+
+    for (i in 1..daysInMonth) {
+        list.add(month.atDay(i))
+    }
+
+    return list
+}
+
