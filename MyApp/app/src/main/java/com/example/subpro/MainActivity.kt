@@ -23,6 +23,8 @@ import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat
 import java.time.LocalDate
 import java.time.YearMonth
+import com.example.subpro.ui.theme.AddSubscriptionScreen
+import androidx.compose.ui.platform.LocalContext
 
 class MainActivity : ComponentActivity() {
 
@@ -106,20 +108,20 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 fun TwoScreenApp(onSendNotification: () -> Unit) {
-    var isFirstScreen by remember { mutableStateOf(true) }
+    var screen by remember { mutableStateOf("main") }
 
     Surface(modifier = Modifier.fillMaxSize(), color = Color.White) {
         Column(
             modifier = Modifier.fillMaxSize(),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            if (isFirstScreen) {
-                Spacer(Modifier.height(40.dp))
+            if (screen == "main") {
 
+                Spacer(Modifier.height(40.dp))
                 Text("Первый экран", style = MaterialTheme.typography.headlineMedium)
                 Spacer(Modifier.height(20.dp))
 
-                Button(onClick = { isFirstScreen = false }) {
+                Button(onClick = { screen = "calendar" }) {
                     Text("Перейти на второй экран")
                 }
 
@@ -129,16 +131,25 @@ fun TwoScreenApp(onSendNotification: () -> Unit) {
                     Text("Показать уведомление")
                 }
 
-            } else {
                 Spacer(Modifier.height(20.dp))
 
-                Button(onClick = { isFirstScreen = true }) {
-                    Text("Назад")
+                Button(onClick = { screen = "add" }) {
+                    Text("Добавить подписку")
                 }
 
-                Spacer(Modifier.height(20.dp))
+            } else if (screen == "calendar") {
 
+                Spacer(Modifier.height(20.dp))
+                Button(onClick = { screen = "main" }) { Text("Назад") }
+                Spacer(Modifier.height(20.dp))
                 CalendarScreen()
+
+            } else if (screen == "add") {
+
+                AddSubscriptionScreen(
+                    context = LocalContext.current,
+                    onBack = { screen = "main" }
+                )
             }
         }
     }
