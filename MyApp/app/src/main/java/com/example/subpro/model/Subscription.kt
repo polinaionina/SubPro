@@ -14,3 +14,16 @@ data class Subscription(
     val startDate: LocalDate,
     val period: SubscriptionPeriod
 )
+
+fun Subscription.nextPayment(): LocalDate {
+    var nextDate = this.startDate
+    while (nextDate.isBefore(LocalDate.now())) {
+        nextDate = when (this.period) {
+            SubscriptionPeriod.DAILY -> nextDate.plusDays(1)
+            SubscriptionPeriod.WEEKLY -> nextDate.plusWeeks(1)
+            SubscriptionPeriod.MONTHLY -> nextDate.plusMonths(1)
+            SubscriptionPeriod.YEARLY -> nextDate.plusYears(1)
+        }
+    }
+    return nextDate
+}

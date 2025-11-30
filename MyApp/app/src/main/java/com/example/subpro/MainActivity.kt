@@ -11,6 +11,8 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -25,6 +27,9 @@ import java.time.LocalDate
 import java.time.YearMonth
 import com.example.subpro.ui.theme.AddSubscriptionScreen
 import androidx.compose.ui.platform.LocalContext
+import com.example.subpro.data.SubscriptionService
+import com.example.subpro.model.Subscription
+import com.example.subpro.model.nextPayment 
 
 class MainActivity : ComponentActivity() {
 
@@ -106,6 +111,7 @@ class MainActivity : ComponentActivity() {
     }
 }
 
+
 @Composable
 fun TwoScreenApp(onSendNotification: () -> Unit) {
     var screen by remember { mutableStateOf("main") }
@@ -155,24 +161,23 @@ fun TwoScreenApp(onSendNotification: () -> Unit) {
     }
 }
 
-/* ==========================
-        КАЛЕНДАРЬ
-   ========================== */
-
 @Composable
 fun CalendarScreen() {
     var currentMonth by remember { mutableStateOf(YearMonth.now()) }
+
+    var selectedDate by remember { mutableStateOf<LocalDate?>(null) }
+
+    val subscriptions = remember { SubscriptionService.getAll() }
 
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = Modifier.padding(16.dp)
     ) {
-        // Шапка календаря
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            Button(onClick = { currentMonth = currentMonth.minusMonths(1) }) {
+            Button(onClick = { currentMonth = currentMonth.minusMonths(1); selectedDate = null }) {
                 Text("←")
             }
 
@@ -181,20 +186,39 @@ fun CalendarScreen() {
                 style = MaterialTheme.typography.titleLarge
             )
 
-            Button(onClick = { currentMonth = currentMonth.plusMonths(1) }) {
+            Button(onClick = { currentMonth = currentMonth.plusMonths(1); selectedDate = null }) {
                 Text("→")
             }
         }
 
         Spacer(Modifier.height(16.dp))
 
-        CalendarMonthView(currentMonth)
+        CalendarMonthView(
+            month = currentMonth,
+            subscriptions = subscriptions,
+
+            onDateSelected = { date -> selectedDate = date }
+        )
+
+        Spacer(Modifier.height(24.dp))
+
+        SubscriptionDetails(selectedDate = selectedDate, subscriptions = subscriptions)
     }
 }
 
+
 @Composable
-fun CalendarMonthView(month: YearMonth) {
+fun CalendarMonthView(
+    month: YearMonth,
+    subscriptions: List<Subscription>,
+    onDateSelected: (LocalDate?) -> Unit
+) {
     val days = remember(month) { generateDaysForMonth(month) }
+
+    val paymentDates: List<LocalDate> = remember(subscriptions) {
+        subscriptions.map { it.nextPayment() }
+    }
+
 
     Row(Modifier.fillMaxWidth()) {
         listOf("Пн", "Вт", "Ср", "Чт", "Пт", "Сб", "Вс").forEach {
@@ -211,6 +235,7 @@ fun CalendarMonthView(month: YearMonth) {
 
     Spacer(Modifier.height(8.dp))
 
+
     days.chunked(7).forEach { week ->
         Row(Modifier.fillMaxWidth()) {
             week.forEach { date ->
@@ -218,11 +243,23 @@ fun CalendarMonthView(month: YearMonth) {
                     modifier = Modifier
                         .weight(1f)
                         .padding(4.dp)
-                        .height(40.dp),
+                        .height(50.dp)
+
+                        .clickable { onDateSelected(date) },
                     contentAlignment = Alignment.Center
                 ) {
                     if (date != null) {
-                        Text(date.dayOfMonth.toString())
+                        val isPaymentDay = paymentDates.contains(date)
+
+                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                            Text(date.dayOfMonth.toString())
+
+                            if (isPaymentDay) {
+                                Canvas(modifier = Modifier.size(6.dp)) {
+                                    drawCircle(Color.Red)
+                                }
+                            }
+                        }
                     }
                 }
             }
@@ -230,13 +267,69 @@ fun CalendarMonthView(month: YearMonth) {
     }
 }
 
+
+@Composable
+fun SubscriptionDetails(selectedDate: LocalDate?, subscriptions: List<Subscription>) {
+    if (selectedDate == null) {
+        Text("Выберите дату в календаре", style = MaterialTheme.typography.titleMedium)
+        return
+    }
+
+    val dailySubscriptions = subscriptions.filter { it.nextPayment() == selectedDate }
+
+    if (dailySubscriptions.isEmpty()) {
+        Text(
+            "На ${selectedDate.dayOfMonth}.${selectedDate.monthValue} нет платежей.",
+            style = MaterialTheme.typography.titleMedium,
+            color = Color.Gray
+        )
+    } else {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp),
+            horizontalAlignment = Alignment.Start
+        ) {
+            Text(
+                "💸 Платежи на ${selectedDate.dayOfMonth}.${selectedDate.monthValue}:",
+                style = MaterialTheme.typography.titleLarge
+            )
+            Spacer(Modifier.height(8.dp))
+
+            dailySubscriptions.forEach { sub ->
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 4.dp),
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
+                ) {
+                    Column(modifier = Modifier.padding(12.dp)) {
+                        Text(
+                            text = "${sub.name} (${sub.provider})",
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = MaterialTheme.typography.titleMedium.fontWeight
+                        )
+                        Text(
+                            text = "Цена: ${sub.price} ₽",
+                            style = MaterialTheme.typography.bodyLarge
+                        )
+                    }
+                }
+            }
+        }
+    }
+}
+
+
 fun generateDaysForMonth(month: YearMonth): List<LocalDate?> {
     val firstDay = month.atDay(1)
     val daysInMonth = month.lengthOfMonth()
 
-    val shift = (firstDay.dayOfWeek.value % 7)
+    val shift = (firstDay.dayOfWeek.value - 1) % 7
 
-    val list: MutableList<LocalDate?> = MutableList(shift) { null }
+    val list = mutableListOf<LocalDate?>()
+
+    repeat(shift) { list.add(null) }
 
     for (i in 1..daysInMonth) {
         list.add(month.atDay(i))
@@ -244,4 +337,3 @@ fun generateDaysForMonth(month: YearMonth): List<LocalDate?> {
 
     return list
 }
-
