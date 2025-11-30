@@ -19,28 +19,49 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat
-import java.time.LocalDate
-import java.time.YearMonth
-import com.example.subpro.ui.theme.AddSubscriptionScreen
-import androidx.compose.ui.platform.LocalContext
 import com.example.subpro.data.SubscriptionService
 import com.example.subpro.model.Subscription
+import com.example.subpro.model.SubscriptionPeriod // Добавлен импорт SubscriptionPeriod
 import com.example.subpro.model.nextPayment
-import com.example.subpro.ui.theme.getDayText
+import com.example.subpro.ui.theme.AddSubscriptionScreen
 import com.example.subpro.ui.theme.asRussianText
+import java.time.LocalDate
+import java.time.Month
+import java.time.YearMonth
 
 // Определяем возможные экраны для навигации
 sealed class Screen(val route: String) {
     object Main : Screen("main")
     object Calendar : Screen("calendar")
-    object Add : Screen("add")
+    object Add : Screen("add_choice") // Экран выбора шаблона (НОВЫЙ)
+    object Form : Screen("add_form") // Экран формы (СТАРЫЙ)
+}
+
+// НОВАЯ ВСПОМОГАТЕЛЬНАЯ ФУНКЦИЯ ДЛЯ ПЕРЕВОДА МЕСЯЦЕВ
+fun Month.toRussianMonthName(): String {
+    return when (this) {
+        Month.JANUARY -> "Январь"
+        Month.FEBRUARY -> "Февраль"
+        Month.MARCH -> "Март"
+        Month.APRIL -> "Апрель"
+        Month.MAY -> "Май"
+        Month.JUNE -> "Июнь"
+        Month.JULY -> "Июль"
+        Month.AUGUST -> "Август"
+        Month.SEPTEMBER -> "Сентябрь"
+        Month.OCTOBER -> "Октябрь"
+        Month.NOVEMBER -> "Ноябрь"
+        Month.DECEMBER -> "Декабрь"
+    }
 }
 
 class MainActivity : ComponentActivity() {
+// ... (onCreate и функции уведомлений остаются без изменений)
 
     private val requestPermissionLauncher =
         registerForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted ->
@@ -142,7 +163,15 @@ fun AppNavigation(onSendNotification: () -> Unit) {
             when (currentScreen) {
                 is Screen.Main -> MainScreen(onSendNotification = onSendNotification)
                 is Screen.Calendar -> CalendarScreen()
-                is Screen.Add -> AddSubscriptionScreen(
+
+                // НОВЫЙ: Экран выбора шаблона
+                is Screen.Add -> SubscriptionChoiceScreen(
+                    onAddCustom = { currentScreen = Screen.Form }, // Переход к форме
+                    onSuccess = { currentScreen = Screen.Main }
+                )
+
+                // СТАРЫЙ: Экран формы добавления
+                is Screen.Form -> AddSubscriptionScreen(
                     context = LocalContext.current,
                     onBack = { currentScreen = Screen.Main }
                 )
@@ -158,17 +187,15 @@ fun BottomNavigationBar(
 ) {
     NavigationBar {
         val items = listOf(
-            Screen.Main to "Главная", // ИЗМЕНЕНО: "1" на "Главная"
+            Screen.Main to "Главная",
             Screen.Calendar to "Календарь",
+            // ИСПОЛЬЗУЕМ НОВЫЙ ЭКРАН Add ДЛЯ КНОПКИ "ДОБАВИТЬ"
             Screen.Add to "Добавить"
         )
 
         items.forEach { (screen, label) ->
             NavigationBarItem(
-                // ИЗМЕНЕНО: icon теперь содержит только текст, который мы хотим видеть
                 icon = { Text(label) },
-                // ИЗМЕНЕНО: label теперь не содержит дублирующего текста,
-                // оставляем только для соответствия API, но без дублирования.
                 label = null,
                 selected = currentScreen == screen,
                 onClick = { onScreenSelected(screen) }
@@ -177,8 +204,67 @@ fun BottomNavigationBar(
     }
 }
 
+// НОВЫЙ КОМПОНЕНТ ДЛЯ ВЫБОРА ШАБЛОНА
+@Composable
+fun SubscriptionChoiceScreen(
+    onAddCustom: () -> Unit,
+    onSuccess: () -> Unit
+) {
+    val context = LocalContext.current
+    var message by remember { mutableStateOf<String?>(null) }
+
+    // Данные для шаблона "Яндекс Плюс"
+    val template = remember {
+        SubscriptionService.SubscriptionTemplate(
+            name = "ПЛЮС",
+            provider = "Яндекс",
+            price = 400.0,
+            period = SubscriptionPeriod.MONTHLY
+        )
+    }
+
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(24.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Spacer(Modifier.height(40.dp))
+        Text(
+            "Быстрое добавление",
+            style = MaterialTheme.typography.headlineMedium
+        )
+        Spacer(Modifier.height(32.dp))
+
+        // --- КНОПКА ШАБЛОНА ---
+        Button(
+            onClick = {
+                SubscriptionService.addFromTemplate(template)
+                message = "Успешно добавлено: ${template.name} (${template.price.toInt()} ₽/${template.period.asRussianText()})"
+                // После успешного добавления, возвращаемся на главный экран
+                onSuccess()
+            },
+            modifier = Modifier.fillMaxWidth().height(60.dp)
+        ) {
+            Text("${template.name} | ${template.price.toInt()} ₽ | ${template.period.asRussianText()}")
+        }
+
+        Spacer(Modifier.height(48.dp))
+
+        // --- КНОПКА ДОБАВИТЬ СВОЙ ВАРИАНТ ---
+        OutlinedButton(
+            onClick = onAddCustom,
+            modifier = Modifier.fillMaxWidth().height(50.dp)
+        ) {
+            Text("Добавить свой вариант")
+        }
+    }
+}
+
+
 @Composable
 fun MainScreen(onSendNotification: () -> Unit) {
+// ... (остальной код MainScreen остается без изменений)
     Column(
         modifier = Modifier.fillMaxSize().padding(16.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -193,11 +279,9 @@ fun MainScreen(onSendNotification: () -> Unit) {
     }
 }
 
-// Функции CalendarScreen, CalendarMonthView, SubscriptionDetails и generateDaysForMonth
-// остаются без изменений для сохранения функционала.
-
 @Composable
 fun CalendarScreen() {
+// ... (CalendarScreen и все вспомогательные функции остаются без изменений)
     var currentMonth by remember { mutableStateOf(YearMonth.now()) }
 
     var selectedDate by remember { mutableStateOf<LocalDate?>(null) }
@@ -217,7 +301,7 @@ fun CalendarScreen() {
             }
 
             Text(
-                text = "${currentMonth.month} ${currentMonth.year}",
+                text = "${currentMonth.month.toRussianMonthName()} ${currentMonth.year}",
                 style = MaterialTheme.typography.titleLarge
             )
 
