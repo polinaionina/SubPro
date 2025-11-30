@@ -16,6 +16,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -147,13 +148,16 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun AppNavigation(onSendNotification: () -> Unit) {
     var currentScreen by remember { mutableStateOf<Screen>(Screen.Main) }
-
+    val bottomBarScreens = listOf(Screen.Main.route, Screen.Calendar.route)
+    val showBottomBar = currentScreen.route in bottomBarScreens
     Scaffold(
         bottomBar = {
-            BottomNavigationBar(
-                currentScreen = currentScreen,
-                onScreenSelected = { currentScreen = it }
-            )
+            if (showBottomBar) {
+                BottomNavigationBar(
+                    currentScreen = currentScreen,
+                    onScreenSelected = { currentScreen = it }
+                )
+            }
         }
     ) { paddingValues ->
         Surface(
@@ -195,7 +199,7 @@ fun BottomNavigationBar(
         )
 
         items.forEach { (screen, label, iconRes) ->
-            val iconSize = if (screen == Screen.Add) 60.dp else 50.dp
+            val iconSize = if (screen == Screen.Add) 65.dp else 50.dp
             NavigationBarItem(
                 icon = {
                     Icon(
@@ -229,22 +233,26 @@ fun SubscriptionChoiceScreen(
             name = "ПЛЮС",
             provider = "Яндекс",
             price = 400.0,
-            period = SubscriptionPeriod.MONTHLY
+            period = SubscriptionPeriod.MONTHLY,
         )
     }
 
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(24.dp),
-        horizontalAlignment = Alignment.CenterHorizontally
+            .padding(16.dp),
+        horizontalAlignment = Alignment.Start
     ) {
-        Spacer(Modifier.height(40.dp))
-        Text(
-            "Быстрое добавление",
-            style = MaterialTheme.typography.headlineMedium
+
+        Icon(
+            painter = painterResource(id = R.drawable.strelka),
+            contentDescription = "на главную",
+            modifier = Modifier.size(48.dp).
+            clickable { onSuccess()},
+            tint = Color.Unspecified
         )
-        Spacer(Modifier.height(32.dp))
+
+        Spacer(Modifier.height(30.dp))
 
         Button(
             onClick = {
@@ -252,18 +260,74 @@ fun SubscriptionChoiceScreen(
                 message = "Успешно добавлено: ${template.name} (${template.price.toInt()} ₽/${template.period.asRussianText()})"
                 onSuccess()
             },
-            modifier = Modifier.fillMaxWidth().height(60.dp)
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(73.dp),
+            shape = RoundedCornerShape(15.dp),
+            colors = ButtonDefaults.buttonColors(
+                containerColor = Color(0xFF94B6EF),
+                contentColor = Color(0xFF213E60)
+            ),
+            contentPadding = PaddingValues(0.dp)
         ) {
-            Text("${template.name} | ${template.price.toInt()} ₽ | ${template.period.asRussianText()}")
+            Row(
+                modifier = Modifier.fillMaxWidth().padding(16.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.Start
+            ){
+                Icon(
+                    painter = painterResource(id = R.drawable.yandex_icon),
+                    contentDescription = null,
+                    modifier = Modifier.size(40.dp),
+                    tint = Color.Unspecified
+                )
+                Spacer(Modifier.width(13.dp))
+                Text("Яндекс ПЛЮС",
+                    fontSize = 20.sp,
+                    fontWeight = FontWeight.Medium,
+                    modifier = Modifier.fillMaxWidth(),
+                    textAlign = TextAlign.Start)
+                //Text("${template.name} | ${template.price.toInt()} ₽ | ${template.period.asRussianText()}",
+                    //textAlign = TextAlign.Start)
+            }
         }
-
-        Spacer(Modifier.height(48.dp))
-
-        OutlinedButton(
+    }
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp)
+    ){
+        Button(
             onClick = onAddCustom,
-            modifier = Modifier.fillMaxWidth().height(50.dp)
+            modifier = Modifier
+                .align(Alignment.BottomEnd)
+                .height(65.dp)
+                .width(200.dp),
+            shape = RoundedCornerShape(15.dp),
+            colors = ButtonDefaults.buttonColors(
+                containerColor = Color(0xFF94B6EF),
+                contentColor = Color(0xFF213E60)
+            ),
+            contentPadding = PaddingValues(0.dp)
         ) {
-            Text("Добавить свой вариант")
+            Row(
+                modifier = Modifier.fillMaxWidth().padding(10.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.Start
+            ){
+                Icon(
+                    painter = painterResource(id = R.drawable.plus),
+                    contentDescription = null,
+                    modifier = Modifier.size(50.dp),
+                    tint = Color.Unspecified
+                )
+                Spacer(Modifier.width(2.dp))
+                Text("Добавить свое",
+                    fontSize = 17.sp,
+                    fontWeight = FontWeight.Medium,
+                    modifier = Modifier.fillMaxWidth(),
+                    textAlign = TextAlign.Start)
+            }
         }
     }
 }

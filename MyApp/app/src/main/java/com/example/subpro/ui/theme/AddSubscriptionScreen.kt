@@ -7,16 +7,27 @@ import android.content.pm.PackageManager
 import android.os.Build
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
+import com.example.subpro.R
 import com.example.subpro.data.SubscriptionService
 import com.example.subpro.model.SubscriptionPeriod
 import com.example.subpro.util.NotificationScheduler
 import java.time.LocalDate
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextFieldDefaults
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontWeight
 
 fun getAvailableNotificationDays(period: SubscriptionPeriod): List<Int> {
     return when (period) {
@@ -74,22 +85,42 @@ fun AddSubscriptionScreen(
             }
         }
     }
-
-
     Column(
         modifier = Modifier
             .fillMaxSize()
             .padding(16.dp)
     ) {
 
-        Text("Добавить подписку", style = MaterialTheme.typography.headlineMedium)
+        Icon(
+            painter = painterResource(id = R.drawable.strelka),
+            contentDescription = "на главную",
+            modifier = Modifier.size(48.dp),
+            //добавить функцию перехода к предыдущему окну
+            tint = Color.Unspecified
+        )
         Spacer(Modifier.height(20.dp))
 
         OutlinedTextField(
             value = name,
             onValueChange = { name = it },
-            label = { Text("Название подписки") },
-            modifier = Modifier.fillMaxWidth()
+            label = { Text("Название подписки",
+                    color = Color(0xFF213E60))
+                    },
+            modifier = Modifier.fillMaxWidth(),
+            shape = RoundedCornerShape(15.dp),
+            textStyle = TextStyle(
+                color = Color(0xFF213E60),
+                fontSize = 18.sp,
+                fontWeight = FontWeight.Medium
+            ),
+            colors = TextFieldDefaults.colors(
+                focusedIndicatorColor = Color(0xFF213E60),
+                unfocusedIndicatorColor = Color(0xFF213E60),
+                focusedContainerColor = Color.Transparent,
+                unfocusedContainerColor = Color.Transparent,
+                disabledContainerColor = Color.Transparent,
+                errorContainerColor = Color.Transparent
+            )
         )
         Spacer(Modifier.height(12.dp))
 
