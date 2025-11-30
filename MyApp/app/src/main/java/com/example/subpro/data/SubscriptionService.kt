@@ -10,7 +10,6 @@ object SubscriptionService {
     private val idCounter = AtomicInteger(1)
     private val subscriptions = mutableListOf<Subscription>()
 
-    // НОВАЯ СТРУКТУРА ДЛЯ ШАБЛОНА
     data class SubscriptionTemplate(
         val name: String,
         val provider: String,

@@ -207,7 +207,6 @@ fun NotificationDaysDropdown(
         }
     }
 
-    // В кнопке оставляем префикс "За", чтобы не было слишком коротко
     val selectedText = getDayText(selectedDays, includePrefix = true)
 
     Box {
@@ -220,7 +219,6 @@ fun NotificationDaysDropdown(
             onDismissRequest = { expanded = false },
         ) {
             availableDays.forEach { days ->
-                // В меню убираем префикс "За"
                 val dayText = getDayText(days, includePrefix = false)
                 DropdownMenuItem(
                     text = { Text(dayText) },
