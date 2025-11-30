@@ -18,7 +18,8 @@ data class Subscription(
 
 fun Subscription.nextPayment(): LocalDate {
     var nextDate = this.startDate
-    while (nextDate.isBefore(LocalDate.now())) {
+
+    while (!nextDate.isAfter(LocalDate.now())) {
         nextDate = when (this.period) {
             SubscriptionPeriod.WEEKLY -> nextDate.plusWeeks(1)
             SubscriptionPeriod.MONTHLY -> nextDate.plusMonths(1)

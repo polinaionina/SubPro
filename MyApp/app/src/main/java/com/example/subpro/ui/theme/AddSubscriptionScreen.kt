@@ -34,7 +34,6 @@ fun SubscriptionPeriod.asRussianText(): String {
     }
 }
 
-// Вспомогательная функция для склонения слова "день"
 fun getDayText(days: Int, includePrefix: Boolean = false): String {
     val prefix = if (includePrefix) "За " else ""
     return when (days) {
