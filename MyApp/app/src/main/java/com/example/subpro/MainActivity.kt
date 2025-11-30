@@ -14,6 +14,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -33,6 +34,10 @@ import com.example.subpro.ui.theme.asRussianText
 import java.time.LocalDate
 import java.time.Month
 import java.time.YearMonth
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.sp
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.res.painterResource
 
 sealed class Screen(val route: String) {
     object Main : Screen("main")
@@ -155,7 +160,7 @@ fun AppNavigation(onSendNotification: () -> Unit) {
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues),
-            color = Color.White
+            color = Color(0xFFF4F2EF)
         ) {
             when (currentScreen) {
                 is Screen.Main -> MainScreen(onSendNotification = onSendNotification)
@@ -180,19 +185,32 @@ fun BottomNavigationBar(
     currentScreen: Screen,
     onScreenSelected: (Screen) -> Unit
 ) {
-    NavigationBar {
+    NavigationBar(
+        containerColor = Color(0xFFF4F2EF)
+    ) {
         val items = listOf(
-            Screen.Main to "Главная",
-            Screen.Calendar to "Календарь",
-            Screen.Add to "Добавить"
+            Triple(Screen.Main, "Главная", R.drawable.menu),
+            Triple(Screen.Calendar, "Календарь", R.drawable.today),
+            Triple(Screen.Add, "Добавить", R.drawable.dobavit)
         )
 
-        items.forEach { (screen, label) ->
+        items.forEach { (screen, label, iconRes) ->
+            val iconSize = if (screen == Screen.Add) 60.dp else 50.dp
             NavigationBarItem(
-                icon = { Text(label) },
+                icon = {
+                    Icon(
+                        painter = painterResource(id = iconRes),
+                        contentDescription = label,
+                        modifier = Modifier.size(iconSize),
+                        tint = Color.Unspecified
+                    )
+                },
                 label = null,
                 selected = currentScreen == screen,
-                onClick = { onScreenSelected(screen) }
+                onClick = { onScreenSelected(screen) },
+                colors = NavigationBarItemDefaults.colors(
+                    indicatorColor = Color(0xFFACBACC)
+                )
             )
         }
     }
@@ -254,15 +272,33 @@ fun SubscriptionChoiceScreen(
 @Composable
 fun MainScreen(onSendNotification: () -> Unit) {
     Column(
-        modifier = Modifier.fillMaxSize().padding(16.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
-    ) {
-        Text("Главная", style = MaterialTheme.typography.headlineLarge)
-
-        Spacer(Modifier.height(30.dp))
-        Button(onClick = { onSendNotification() }) {
-            Text("Показать тестовое уведомление")
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ){
+        Text("SubPro",
+            style = MaterialTheme.typography.headlineLarge,
+            color = Color(0xFFE68C3A),
+            fontSize = 40.sp,
+            fontWeight = FontWeight.SemiBold)
+        Spacer(Modifier.height(35.dp))
+        Button(
+            onClick = { onSendNotification() },
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(73.dp),
+            shape = RoundedCornerShape(15.dp),
+            colors = ButtonDefaults.buttonColors(
+                containerColor = Color(0xFF94B6EF),
+                contentColor = Color(0xFF213E60)
+            )
+            ) {
+                Text("Показать тестовое уведомление",
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.Medium,
+                    modifier = Modifier.fillMaxWidth(),
+                    textAlign = TextAlign.Start)
         }
     }
 }
