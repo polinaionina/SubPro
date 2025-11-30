@@ -15,7 +15,8 @@ object SubscriptionService {
         provider: String,
         price: Double,
         startDate: LocalDate,
-        period: SubscriptionPeriod
+        period: SubscriptionPeriod,
+        notificationDaysBefore: Int
     ) {
         val newSub = Subscription(
             id = idCounter.getAndIncrement(),
@@ -23,7 +24,8 @@ object SubscriptionService {
             provider = provider,
             price = price,
             startDate = startDate,
-            period = period
+            period = period,
+            notificationDaysBefore = notificationDaysBefore
         )
         subscriptions.add(newSub)
     }
