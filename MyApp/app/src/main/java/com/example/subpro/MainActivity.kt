@@ -29,7 +29,16 @@ import com.example.subpro.ui.theme.AddSubscriptionScreen
 import androidx.compose.ui.platform.LocalContext
 import com.example.subpro.data.SubscriptionService
 import com.example.subpro.model.Subscription
-import com.example.subpro.model.nextPayment 
+import com.example.subpro.model.nextPayment
+import com.example.subpro.ui.theme.getDayText
+import com.example.subpro.ui.theme.asRussianText
+
+// Определяем возможные экраны для навигации
+sealed class Screen(val route: String) {
+    object Main : Screen("main")
+    object Calendar : Screen("calendar")
+    object Add : Screen("add")
+}
 
 class MainActivity : ComponentActivity() {
 
@@ -44,7 +53,7 @@ class MainActivity : ComponentActivity() {
         createNotificationChannel()
 
         setContent {
-            TwoScreenApp(
+            AppNavigation(
                 onSendNotification = { requestNotificationPermissionAndSend() }
             )
         }
@@ -113,53 +122,79 @@ class MainActivity : ComponentActivity() {
 
 
 @Composable
-fun TwoScreenApp(onSendNotification: () -> Unit) {
-    var screen by remember { mutableStateOf("main") }
+fun AppNavigation(onSendNotification: () -> Unit) {
+    var currentScreen by remember { mutableStateOf<Screen>(Screen.Main) }
 
-    Surface(modifier = Modifier.fillMaxSize(), color = Color.White) {
-        Column(
-            modifier = Modifier.fillMaxSize(),
-            horizontalAlignment = Alignment.CenterHorizontally
+    Scaffold(
+        bottomBar = {
+            BottomNavigationBar(
+                currentScreen = currentScreen,
+                onScreenSelected = { currentScreen = it }
+            )
+        }
+    ) { paddingValues ->
+        Surface(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(paddingValues),
+            color = Color.White
         ) {
-            if (screen == "main") {
-
-                Spacer(Modifier.height(40.dp))
-                Text("Первый экран", style = MaterialTheme.typography.headlineMedium)
-                Spacer(Modifier.height(20.dp))
-
-                Button(onClick = { screen = "calendar" }) {
-                    Text("Перейти на второй экран")
-                }
-
-                Spacer(Modifier.height(20.dp))
-
-                Button(onClick = { onSendNotification() }) {
-                    Text("Показать уведомление")
-                }
-
-                Spacer(Modifier.height(20.dp))
-
-                Button(onClick = { screen = "add" }) {
-                    Text("Добавить подписку")
-                }
-
-            } else if (screen == "calendar") {
-
-                Spacer(Modifier.height(20.dp))
-                Button(onClick = { screen = "main" }) { Text("Назад") }
-                Spacer(Modifier.height(20.dp))
-                CalendarScreen()
-
-            } else if (screen == "add") {
-
-                AddSubscriptionScreen(
+            when (currentScreen) {
+                is Screen.Main -> MainScreen(onSendNotification = onSendNotification)
+                is Screen.Calendar -> CalendarScreen()
+                is Screen.Add -> AddSubscriptionScreen(
                     context = LocalContext.current,
-                    onBack = { screen = "main" }
+                    onBack = { currentScreen = Screen.Main }
                 )
             }
         }
     }
 }
+
+@Composable
+fun BottomNavigationBar(
+    currentScreen: Screen,
+    onScreenSelected: (Screen) -> Unit
+) {
+    NavigationBar {
+        val items = listOf(
+            Screen.Main to "Главная", // ИЗМЕНЕНО: "1" на "Главная"
+            Screen.Calendar to "Календарь",
+            Screen.Add to "Добавить"
+        )
+
+        items.forEach { (screen, label) ->
+            NavigationBarItem(
+                // ИЗМЕНЕНО: icon теперь содержит только текст, который мы хотим видеть
+                icon = { Text(label) },
+                // ИЗМЕНЕНО: label теперь не содержит дублирующего текста,
+                // оставляем только для соответствия API, но без дублирования.
+                label = null,
+                selected = currentScreen == screen,
+                onClick = { onScreenSelected(screen) }
+            )
+        }
+    }
+}
+
+@Composable
+fun MainScreen(onSendNotification: () -> Unit) {
+    Column(
+        modifier = Modifier.fillMaxSize().padding(16.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
+    ) {
+        Text("Главная", style = MaterialTheme.typography.headlineLarge)
+
+        Spacer(Modifier.height(30.dp))
+        Button(onClick = { onSendNotification() }) {
+            Text("Показать тестовое уведомление")
+        }
+    }
+}
+
+// Функции CalendarScreen, CalendarMonthView, SubscriptionDetails и generateDaysForMonth
+// остаются без изменений для сохранения функционала.
 
 @Composable
 fun CalendarScreen() {
