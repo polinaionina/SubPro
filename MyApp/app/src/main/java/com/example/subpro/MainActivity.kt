@@ -318,7 +318,7 @@ fun SubscriptionChoiceScreen(
                 Icon(
                     painter = painterResource(id = R.drawable.plus),
                     contentDescription = null,
-                    modifier = Modifier.size(50.dp),
+                    modifier = Modifier.size(48.dp),
                     tint = Color.Unspecified
                 )
                 Spacer(Modifier.width(2.dp))
@@ -359,7 +359,7 @@ fun MainScreen(onSendNotification: () -> Unit) {
             )
             ) {
                 Text("Показать тестовое уведомление",
-                    fontSize = 18.sp,
+                    fontSize = 20.sp,
                     fontWeight = FontWeight.Medium,
                     modifier = Modifier.fillMaxWidth(),
                     textAlign = TextAlign.Start)
