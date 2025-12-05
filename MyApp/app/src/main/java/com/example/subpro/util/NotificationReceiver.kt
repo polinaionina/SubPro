@@ -16,7 +16,7 @@ const val CHANNEL_ID = "subscription_channel"
 
 class NotificationReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
-        val subName = intent.getStringExtra("SUB_NAME") ?: "Подписка"
+        val subName = intent.getStringExtra("SUB_NAME") ?: "Подписька"
         val subPrice = intent.getDoubleExtra("SUB_PRICE", 0.0)
         val daysBefore = intent.getIntExtra("SUB_DAYS_BEFORE", 0)
         val subId = intent.getIntExtra("SUB_ID", 1000)
