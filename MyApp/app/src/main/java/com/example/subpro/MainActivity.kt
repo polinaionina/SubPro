@@ -54,7 +54,7 @@ fun Month.toRussianMonthName(): String {
         Month.MARCH -> "Март"
         Month.APRIL -> "Апрель"
         Month.MAY -> "Май"
-        Month.JUNE -> "Июнь"
+        Month.JUNE -> "Июнь "
         Month.JULY -> "Июль"
         Month.AUGUST -> "Август"
         Month.SEPTEMBER -> "Сентябрь"
