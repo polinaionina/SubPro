@@ -40,6 +40,9 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.res.painterResource
 
+import androidx.appcompat.app.AppCompatActivity
+import com.example.subpro.ui.theme.TelegramWebViewActivity
+
 sealed class Screen(val route: String) {
     object Main : Screen("main")
     object Calendar : Screen("calendar")
@@ -64,6 +67,20 @@ fun Month.toRussianMonthName(): String {
     }
 }
 
+class MainActivity : AppCompatActivity() {
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+
+        // Тут активация кнопки входа
+        startTelegramLogin()
+    }
+
+    private fun startTelegramLogin() {
+        val intent = Intent(this, TelegramWebViewActivity::class.java)
+        startActivity(intent)
+    }
+}
 class MainActivity : ComponentActivity() {
 
     private val requestPermissionLauncher =

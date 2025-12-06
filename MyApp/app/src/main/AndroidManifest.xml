@@ -26,6 +26,11 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <activity
+            android:name=".ui.theme.TelegramWebViewActivity"
+            android:exported="true"
+            android:theme="@style/Theme.SubPro" />
+
 
         <!-- Регистрация BroadcastReceiver (предполагаем, что он в util) -->
         <receiver android:name=".util.NotificationReceiver" android:enabled="true"/>
