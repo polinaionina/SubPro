@@ -39,6 +39,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.res.painterResource
+import androidx.compose.foundation.lazy. LazyColumn
+import androidx.compose.foundation.lazy.items
 
 sealed class Screen(val route: String) {
     object Main : Screen("main")
@@ -335,34 +337,100 @@ fun SubscriptionChoiceScreen(
 
 @Composable
 fun MainScreen(onSendNotification: () -> Unit) {
+    val subscriptions = remember { SubscriptionService.getAll() }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
             .padding(16.dp),
-        horizontalAlignment = Alignment.CenterHorizontally
-    ){
-        Text("SubPro",
+        horizontalAlignment = Alignment. CenterHorizontally
+    ) {
+        Text(
+            "SubPro",
             style = MaterialTheme.typography.headlineLarge,
             color = Color(0xFFE68C3A),
             fontSize = 40.sp,
-            fontWeight = FontWeight.SemiBold)
+            fontWeight = FontWeight.SemiBold
+        )
+
         Spacer(Modifier.height(35.dp))
-        Button(
-            onClick = { onSendNotification() },
+
+        if (subscriptions. isEmpty()) {
+            Text(
+                "У вас пока нет подписок",
+                style = MaterialTheme.typography.titleMedium,
+                color = Color.Gray
+            )
+        } else {
+            val totalPrice = subscriptions.sumOf { it. price }
+            Text(
+                "Всего подписок: ${subscriptions.size}",
+                style = MaterialTheme.typography.titleLarge,
+                fontWeight = FontWeight.Medium
+            )
+            Text(
+                "Общая сумма: ${totalPrice. toInt()} ₽/мес",
+                style = MaterialTheme.typography.titleMedium,
+                color = Color. Gray
+            )
+
+            Spacer(Modifier.height(16.dp))
+
+            LazyColumn(
+                modifier = Modifier.fillMaxSize(),
+                verticalArrangement = Arrangement. spacedBy(8.dp)
+            ) {
+                items(subscriptions) { sub ->
+                    SubscriptionCard(subscription = sub)
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun SubscriptionCard(subscription: Subscription) {
+    val nextPayment = subscription.nextPayment()
+
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(15.dp),
+        colors = CardDefaults.cardColors(containerColor = Color(0xFF94B6EF))
+    ) {
+        Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(73.dp),
-            shape = RoundedCornerShape(15.dp),
-            colors = ButtonDefaults.buttonColors(
-                containerColor = Color(0xFF94B6EF),
-                contentColor = Color(0xFF213E60)
-            )
+                .padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            Column(
+                modifier = Modifier.weight(1f)
             ) {
-                Text("Показать тестовое уведомление",
+                Text(
+                    text = subscription.name,
                     fontSize = 20.sp,
-                    fontWeight = FontWeight.Medium,
-                    modifier = Modifier.fillMaxWidth(),
-                    textAlign = TextAlign.Start)
+                    fontWeight = FontWeight. SemiBold,
+                    color = Color(0xFF213E60)
+                )
+                Text(
+                    text = subscription. provider,
+                    fontSize = 14.sp,
+                    color = Color(0xFF213E60). copy(alpha = 0.7f)
+                )
+                Text(
+                    text = "Следующий платёж: ${nextPayment.dayOfMonth}. ${nextPayment.monthValue}. ${nextPayment.year}",
+                    fontSize = 12. sp,
+                    color = Color(0xFF213E60).copy(alpha = 0.6f)
+                )
+            }
+
+            Text(
+                text = "${subscription.price.toInt()} ₽",
+                fontSize = 22.sp,
+                fontWeight = FontWeight.Bold,
+                color = Color(0xFF213E60)
+            )
         }
     }
 }
