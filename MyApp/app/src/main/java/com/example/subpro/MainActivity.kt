@@ -39,14 +39,24 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.res.painterResource
-import androidx.compose.foundation.lazy. LazyColumn
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import android.content.Context
+import android.net.Uri
+import java.util.UUID
+import androidx.compose.ui.platform.LocalDensity
+
+
+// -------------------------------------------------------------------
+// 1. НАВИГАЦИЯ И ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ
+// -------------------------------------------------------------------
 
 sealed class Screen(val route: String) {
     object Main : Screen("main")
     object Calendar : Screen("calendar")
     object Add : Screen("add_choice")
     object Form : Screen("add_form")
+    object TelegramAuth : Screen("telegram_auth") // <-- НОВЫЙ ЭКРАН
 }
 
 fun Month.toRussianMonthName(): String {
@@ -66,7 +76,14 @@ fun Month.toRussianMonthName(): String {
     }
 }
 
+// -------------------------------------------------------------------
+// 2. MAIN ACTIVITY
+// -------------------------------------------------------------------
+
 class MainActivity : ComponentActivity() {
+
+    // Состояние для Compose, которое обновляется после Deep Link
+    var telegramAuthSuccess by mutableStateOf(false)
 
     private val requestPermissionLauncher =
         registerForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted ->
@@ -78,12 +95,50 @@ class MainActivity : ComponentActivity() {
 
         createNotificationChannel()
 
+        // --- Обработка Deep Link при запуске ---
+        handleIntent(intent)
+        // ----------------------------------------
+
         setContent {
             AppNavigation(
-                onSendNotification = { requestNotificationPermissionAndSend() }
+                onSendNotification = { requestNotificationPermissionAndSend() },
+                isTelegramAuthSuccess = telegramAuthSuccess
             )
         }
     }
+
+    // --- Обработка Deep Link при возврате из браузера ---
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        handleIntent(intent)
+    }
+
+    private fun handleIntent(intent: Intent?) {
+        // Убеждаемся, что intent не null
+        val appLinkData: Uri? = intent?.data
+        val prefs = getSharedPreferences("auth_prefs", Context.MODE_PRIVATE)
+
+        // Проверяем схему и хост (subpro://auth)
+        if (appLinkData != null && appLinkData.scheme == "subpro" && appLinkData.host == "auth") {
+            val token = appLinkData.getQueryParameter("token")
+            val telegramId = appLinkData.getQueryParameter("telegramId")
+
+            if (token != null && telegramId != null) {
+                // Аутентификация успешна. Сохраняем токен и ID
+                prefs.edit().apply {
+                    putString("jwt_token", token)
+                    putString("telegram_id", telegramId)
+                    apply()
+                }
+                println("Telegram Auth Success and Token Saved: ID=$telegramId")
+                telegramAuthSuccess = true // Обновляем состояние для Compose
+            } else {
+                println("Telegram Auth Failed: Missing token or telegramId")
+                telegramAuthSuccess = false
+            }
+        }
+    }
+    // -----------------------------------------------------------------
 
     private fun requestNotificationPermissionAndSend() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
@@ -146,12 +201,32 @@ class MainActivity : ComponentActivity() {
     }
 }
 
+// -------------------------------------------------------------------
+// 3. COMPOSE COMPONENTS
+// -------------------------------------------------------------------
 
 @Composable
-fun AppNavigation(onSendNotification: () -> Unit) {
+fun AppNavigation(
+    onSendNotification: () -> Unit,
+    isTelegramAuthSuccess: Boolean
+) {
     var currentScreen by remember { mutableStateOf<Screen>(Screen.Main) }
     val bottomBarScreens = listOf(Screen.Main.route, Screen.Calendar.route)
     val showBottomBar = currentScreen.route in bottomBarScreens
+
+    // Получение Activity для доступа к telegramAuthSuccess
+    val context = LocalContext.current
+    val activity = remember(context) { context as? MainActivity }
+
+    // Логика перехода на MainScreen после успешного Deep Link
+    LaunchedEffect(isTelegramAuthSuccess) {
+        if (isTelegramAuthSuccess) {
+            currentScreen = Screen.Main
+            // Сбрасываем флаг в Activity для предотвращения повторного вызова
+            activity?.telegramAuthSuccess = false
+        }
+    }
+
     Scaffold(
         bottomBar = {
             if (showBottomBar) {
@@ -169,17 +244,26 @@ fun AppNavigation(onSendNotification: () -> Unit) {
             color = Color(0xFFF4F2EF)
         ) {
             when (currentScreen) {
-                is Screen.Main -> MainScreen(onSendNotification = onSendNotification)
+                is Screen.Main -> MainScreen(
+                    onSendNotification = onSendNotification,
+                    onGoToTelegramAuth = { currentScreen = Screen.TelegramAuth }
+                )
                 is Screen.Calendar -> CalendarScreen()
 
                 is Screen.Add -> SubscriptionChoiceScreen(
-                    onAddCustom = { currentScreen = Screen.Form }, // Переход к форме
+                    onAddCustom = { currentScreen = Screen.Form },
                     onSuccess = { currentScreen = Screen.Main }
                 )
 
                 is Screen.Form -> AddSubscriptionScreen(
                     context = LocalContext.current,
                     onBack = { currentScreen = Screen.Main }
+                )
+
+                is Screen.TelegramAuth -> TelegramAuthScreen(
+                    serverBaseUrl = "https://2ca7618e23c1aa.lhr.life",
+                    onBack = { currentScreen = Screen.Main },
+                    onAuthSuccess = { currentScreen = Screen.Main } // Этот колбэк больше не нужен благодаря LaunchedEffect, но можно оставить как заглушку
                 )
             }
         }
@@ -289,8 +373,6 @@ fun SubscriptionChoiceScreen(
                     fontWeight = FontWeight.Medium,
                     modifier = Modifier.fillMaxWidth(),
                     textAlign = TextAlign.Start)
-                //Text("${template.name} | ${template.price.toInt()} ₽ | ${template.period.asRussianText()}",
-                    //textAlign = TextAlign.Start)
             }
         }
     }
@@ -336,7 +418,10 @@ fun SubscriptionChoiceScreen(
 
 
 @Composable
-fun MainScreen(onSendNotification: () -> Unit) {
+fun MainScreen(
+    onSendNotification: () -> Unit,
+    onGoToTelegramAuth: () -> Unit
+) {
     val subscriptions = remember { SubscriptionService.getAll() }
 
     Column(
@@ -355,7 +440,50 @@ fun MainScreen(onSendNotification: () -> Unit) {
 
         Spacer(Modifier.height(35.dp))
 
-        if (subscriptions. isEmpty()) {
+        // --- КНОПКА ТЕСТОВОГО УВЕДОМЛЕНИЯ ---
+        Button(
+            onClick = { onSendNotification() },
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(73.dp)
+                .padding(vertical = 4.dp),
+            shape = RoundedCornerShape(15.dp),
+            colors = ButtonDefaults.buttonColors(
+                containerColor = Color(0xFF94B6EF),
+                contentColor = Color(0xFF213E60)
+            )
+        ) {
+            Text("Показать тестовое уведомление",
+                fontSize = 20.sp,
+                fontWeight = FontWeight.Medium,
+                modifier = Modifier.fillMaxWidth(),
+                textAlign = TextAlign.Start)
+        }
+
+        // --- НОВАЯ КНОПКА TELEGRAM ---
+        Button(
+            onClick = onGoToTelegramAuth, // <-- Вызываем переход на экран аутентификации
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(73.dp)
+                .padding(vertical = 4.dp),
+            shape = RoundedCornerShape(15.dp),
+            colors = ButtonDefaults.buttonColors(
+                containerColor = Color(0xFFE68C3A), // Контрастный цвет
+                contentColor = Color.White
+            )
+        ) {
+            Text("Настроить Telegram-уведомления",
+                fontSize = 20.sp,
+                fontWeight = FontWeight.Medium,
+                modifier = Modifier.fillMaxWidth(),
+                textAlign = TextAlign.Start)
+        }
+
+        Spacer(Modifier.height(15.dp)) // Отделяем кнопки от списка подписок
+
+        // --- Существующая логика списка подписок ---
+        if (subscriptions.isEmpty()) {
             Text(
                 "У вас пока нет подписок",
                 style = MaterialTheme.typography.titleMedium,
@@ -434,6 +562,85 @@ fun SubscriptionCard(subscription: Subscription) {
         }
     }
 }
+
+@Composable
+fun TelegramAuthScreen(
+    serverBaseUrl: String,
+    onBack: () -> Unit,
+    onAuthSuccess: () -> Unit
+) {
+    val context = LocalContext.current
+    val prefs = remember { context.getSharedPreferences("auth_prefs", Context.MODE_PRIVATE) }
+
+    val startAuth: () -> Unit = {
+        // 1. Получаем/генерируем DeviceId для привязки nonce на сервере
+        val deviceId = prefs.getString("local_device_id", UUID.randomUUID().toString()) ?: UUID.randomUUID().toString()
+        prefs.edit().putString("local_device_id", deviceId).apply()
+
+        // 2. Формируем URL для запуска процесса
+        // Мы открываем URL, который должен инициировать Telegram Login Widget
+        // и запустить POST-запрос к /api/Auth/start на вашем сервере.
+        val browserStartUrl = "$serverBaseUrl/telegram-login.html"
+
+        // 3. Открываем браузер
+        val intent = Intent(Intent.ACTION_VIEW, Uri.parse(browserStartUrl))
+        context.startActivity(intent)
+    }
+
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        // Кнопка назад
+        Icon(
+            painter = painterResource(id = R.drawable.strelka),
+            contentDescription = "на главную",
+            modifier = Modifier
+                .size(48.dp)
+                .align(Alignment.Start)
+                .clickable { onBack() },
+            tint = Color.Unspecified
+        )
+        Spacer(Modifier.height(30.dp))
+        Text(
+            "Настройка Telegram-уведомлений",
+            style = MaterialTheme.typography.headlineSmall,
+            textAlign = TextAlign.Center,
+            fontWeight = FontWeight.SemiBold
+        )
+        Spacer(Modifier.height(30.dp))
+
+        Button(
+            onClick = startAuth, // <-- Запуск процесса
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(73.dp),
+            shape = RoundedCornerShape(15.dp),
+            colors = ButtonDefaults.buttonColors(
+                containerColor = Color(0xFF2196F3), // Цвет Telegram
+                contentColor = Color.White
+            )
+        ) {
+            Text("Войти через Telegram",
+                fontSize = 20.sp,
+                fontWeight = FontWeight.Medium)
+        }
+
+        Spacer(Modifier.height(30.dp))
+        Text(
+            "Вас перекинет в браузер для входа через Telegram. После успешной аутентификации вы автоматически вернетесь в приложение с сохраненным токеном.",
+            textAlign = TextAlign.Center,
+            style = MaterialTheme.typography.bodyMedium,
+            color = Color.Gray
+        )
+    }
+}
+
+// -------------------------------------------------------------------
+// 4. CALENDAR COMPONENTS (Возвращены для разрешения ссылок)
+// -------------------------------------------------------------------
 
 @Composable
 fun CalendarScreen() {
