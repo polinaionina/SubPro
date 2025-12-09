@@ -327,16 +327,27 @@ fun SubscriptionChoiceScreen(
         modifier = Modifier
             .fillMaxSize()
             .padding(16.dp),
-        horizontalAlignment = Alignment.Start
+        horizontalAlignment = Alignment.Start,
     ) {
-
-        Icon(
-            painter = painterResource(id = R.drawable.strelka),
-            contentDescription = "на главную",
-            modifier = Modifier.size(48.dp).
-            clickable { onSuccess()},
-            tint = Color.Unspecified
-        )
+        Row(modifier = Modifier.fillMaxWidth().padding(0.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.Start)
+        {
+            Icon(
+                painter = painterResource(id = R.drawable.strelka),
+                contentDescription = "на главную",
+                modifier = Modifier.size(48.dp).
+                clickable { onSuccess()},
+                tint = Color.Unspecified
+            )
+            Spacer(Modifier.width(25.dp))
+            Text("Шаблоны подписок",
+                fontSize = 24.sp,
+                fontWeight = FontWeight.Medium,
+                modifier = Modifier.fillMaxWidth(),
+                textAlign = TextAlign.Start,
+                color = Color(0xFF213E60))
+        }
 
         Spacer(Modifier.height(30.dp))
 

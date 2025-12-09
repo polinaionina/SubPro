@@ -88,7 +88,7 @@ fun CurrencyDropdownMenu(
                 ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded)
             },
             textStyle = TextStyle(
-                color = Color(0xFF445365),
+                color = Color(0xFF223F61),
                 fontSize = 20.sp,
                 fontWeight = FontWeight.Medium
             ),
@@ -96,13 +96,13 @@ fun CurrencyDropdownMenu(
                 focusedIndicatorColor = Color.Transparent,
                 unfocusedIndicatorColor = Color.Transparent,
 
-                focusedContainerColor = Color(0xFFF9DFC6),
-                unfocusedContainerColor = Color(0xFFF9DFC6),
-                disabledContainerColor = Color(0xFFF9DFC6),
-                errorContainerColor = Color(0xFFF9DFC6),
+                focusedContainerColor = Color(0xFF94B7EF),
+                unfocusedContainerColor = Color(0xFF94B7EF),
+                disabledContainerColor = Color(0xFF94B7EF),
+                errorContainerColor = Color(0xFF94B7EF),
 
-                focusedLabelColor = Color(0xFF213E60),
-                unfocusedLabelColor = Color(0xFF213E60)
+                focusedLabelColor = Color(0xFF223F61),
+                unfocusedLabelColor = Color(0xFF223F61)
             )
         )
 
@@ -156,28 +156,40 @@ fun AddSubscriptionScreen(
             .fillMaxSize()
             .padding(16.dp)
     ) {
+        Row(modifier = Modifier.fillMaxWidth().padding(0.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.Start)
+        {
+            Icon(
+                painter = painterResource(id = R.drawable.strelka),
+                contentDescription = "на главную",
+                modifier = Modifier.size(48.dp)
+                    .clickable{onBack()},
+                tint = Color.Unspecified
+            )
+            Spacer(Modifier.width(48.dp))
+            Text("Новая подписка",
+                fontSize = 24.sp,
+                fontWeight = FontWeight.Medium,
+                modifier = Modifier.fillMaxWidth(),
+                textAlign = TextAlign.Start,
+                color = Color(0xFF213E60))
+        }
 
-        Icon(
-            painter = painterResource(id = R.drawable.strelka),
-            contentDescription = "на главную",
-            modifier = Modifier.size(48.dp)
-                .clickable{onBack()},
-            tint = Color.Unspecified
-        )
         Spacer(Modifier.height(20.dp))
 
         TextField(
             value = name,
             onValueChange = { name = it },
             label = { Text("Название подписки",
-                    color = Color(0xFF545F6E))
+                    color = Color(0xFF223F61))
                     },
             modifier = Modifier
                 .fillMaxWidth()
                 .height(65.dp),
             shape = RoundedCornerShape(15.dp),
             textStyle = TextStyle(
-                color = Color(0xFF445365),
+                color = Color(0xFF223F61),
                 fontSize = 20.sp,
                 fontWeight = FontWeight.Medium
             ),
@@ -185,13 +197,13 @@ fun AddSubscriptionScreen(
                 focusedIndicatorColor = Color.Transparent,
                 unfocusedIndicatorColor = Color.Transparent,
 
-                focusedContainerColor = Color(0xFFF9DFC6),
-                unfocusedContainerColor = Color(0xFFF9DFC6),
-                disabledContainerColor = Color(0xFFF9DFC6),
-                errorContainerColor = Color(0xFFF9DFC6),
+                focusedContainerColor = Color(0xFF94B7EF),
+                unfocusedContainerColor = Color(0xFF94B7EF),
+                disabledContainerColor = Color(0xFF94B7EF),
+                errorContainerColor = Color(0xFF94B7EF),
 
-                focusedLabelColor = Color(0xFF213E60),
-                unfocusedLabelColor = Color(0xFF213E60)
+                focusedLabelColor = Color(0xFF223F61),
+                unfocusedLabelColor = Color(0xFF223F61)
             )
         )
         Spacer(Modifier.height(13.dp))
@@ -213,7 +225,7 @@ fun AddSubscriptionScreen(
                     .height(65.dp),
                 shape = RoundedCornerShape(15.dp),
                 textStyle = TextStyle(
-                    color = Color(0xFF445365),
+                    color = Color(0xFF223F61),
                     fontSize = 20.sp,
                     fontWeight = FontWeight.Medium
                 ),
@@ -221,13 +233,13 @@ fun AddSubscriptionScreen(
                     focusedIndicatorColor = Color.Transparent,
                     unfocusedIndicatorColor = Color.Transparent,
 
-                    focusedContainerColor = Color(0xFFF9DFC6),
-                    unfocusedContainerColor = Color(0xFFF9DFC6),
-                    disabledContainerColor = Color(0xFFF9DFC6),
-                    errorContainerColor = Color(0xFFF9DFC6),
+                    focusedContainerColor = Color(0xFF94B7EF),
+                    unfocusedContainerColor = Color(0xFF94B7EF),
+                    disabledContainerColor = Color(0xFF94B7EF),
+                    errorContainerColor = Color(0xFF94B7EF),
 
-                    focusedLabelColor = Color(0xFF213E60),
-                    unfocusedLabelColor = Color(0xFF213E60)
+                    focusedLabelColor = Color(0xFF223F61),
+                    unfocusedLabelColor = Color(0xFF223F61)
                 )
             )
         }
@@ -259,17 +271,17 @@ fun AddSubscriptionScreen(
                     .width(170.dp),
                 shape = RoundedCornerShape(15.dp),
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = Color(0xFFF9DFC6)
+                    containerColor = Color(0xFF94B7EF)
                 )
             ) {
                 Column(
                     modifier = Modifier.fillMaxSize()
                 ) {
                     Text("Дата списания",
-                        color = Color(0xFF545F6E))
+                        color = Color(0xFF213E60))
                     Spacer(Modifier.height(2.dp))
                     Text("$date",
-                        color = Color(0xFF445365),
+                        color = Color(0xFF213E60),
                         fontSize = 20.sp,
                         fontWeight = FontWeight.Medium)
                 }
@@ -386,16 +398,16 @@ fun NotificationDaysDropdown(
                 .fillMaxWidth(),
             shape = RoundedCornerShape(15.dp),
             colors = ButtonDefaults.buttonColors(
-                containerColor = Color(0xFFF9DFC6)
+                containerColor = Color(0xFF94B6EF)
             )) {
             Column(
                 modifier = Modifier.fillMaxSize()
             ){
                 Text("Напомнить",
-                    color = Color(0xFF545F6E))
+                    color = Color(0xFF213E60))
                 Spacer(Modifier.height(2.dp))
                 Text(selectedText,
-                    color = Color(0xFF445365),
+                    color = Color(0xFF213E60),
                     fontSize = 20.sp,
                     fontWeight = FontWeight.Medium)
             }
@@ -437,16 +449,16 @@ fun PeriodDropdownMenu(
                 .fillMaxWidth(),
             shape = RoundedCornerShape(15.dp),
             colors = ButtonDefaults.buttonColors(
-                containerColor = Color(0xFFF9DFC6)
+                containerColor = Color(0xFF94B6EF)
             )) {
             Column(
                 modifier = Modifier.fillMaxSize()
             ){
                 Text("Тип подписки",
-                    color = Color(0xFF545F6E))
+                    color = Color(0xFF213E60))
                 Spacer(Modifier.height(2.dp))
                 Text("${selected.asRussianText()}",
-                    color = Color(0xFF445365),
+                    color = Color(0xFF213E60),
                     fontSize = 20.sp,
                     fontWeight = FontWeight.Medium)
             }
