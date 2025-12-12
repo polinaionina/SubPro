@@ -28,6 +28,7 @@ import java.time.LocalDate
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.text.style.TextAlign
 
+
 fun getAvailableNotificationDays(period: SubscriptionPeriod): List<Int> {
     return when (period) {
         SubscriptionPeriod.WEEKLY -> listOf(1, 3)
@@ -156,23 +157,24 @@ fun AddSubscriptionScreen(
             .fillMaxSize()
             .padding(16.dp)
     ) {
-        Row(modifier = Modifier.fillMaxWidth().padding(0.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.Start)
+        Box(modifier = Modifier.fillMaxWidth().padding(0.dp),
+
+            contentAlignment = Alignment.Center)
         {
             Icon(
                 painter = painterResource(id = R.drawable.strelka),
                 contentDescription = "на главную",
-                modifier = Modifier.size(48.dp)
+                modifier = Modifier
+                    .align(Alignment.CenterStart)
+                    .size(48.dp)
                     .clickable{onBack()},
                 tint = Color.Unspecified
             )
-            Spacer(Modifier.width(48.dp))
             Text("Новая подписка",
                 fontSize = 24.sp,
                 fontWeight = FontWeight.Medium,
-                modifier = Modifier.fillMaxWidth(),
-                textAlign = TextAlign.Start,
+                modifier = Modifier.align(Alignment.Center).fillMaxWidth(),
+                textAlign = TextAlign.Center,
                 color = Color(0xFF213E60))
         }
 

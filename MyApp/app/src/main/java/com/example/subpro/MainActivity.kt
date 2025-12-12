@@ -329,14 +329,15 @@ fun SubscriptionChoiceScreen(
             .padding(16.dp),
         horizontalAlignment = Alignment.Start,
     ) {
-        Row(modifier = Modifier.fillMaxWidth().padding(0.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.Start)
+
+        Box(modifier = Modifier.fillMaxWidth().padding(0.dp),
+
+            contentAlignment = Alignment.Center)
         {
             Icon(
                 painter = painterResource(id = R.drawable.strelka),
                 contentDescription = "на главную",
-                modifier = Modifier.size(48.dp).
+                modifier = Modifier.align(Alignment.CenterStart).size(48.dp).
                 clickable { onSuccess()},
                 tint = Color.Unspecified
             )
@@ -344,8 +345,8 @@ fun SubscriptionChoiceScreen(
             Text("Шаблоны подписок",
                 fontSize = 24.sp,
                 fontWeight = FontWeight.Medium,
-                modifier = Modifier.fillMaxWidth(),
-                textAlign = TextAlign.Start,
+                modifier = Modifier.align(Alignment.Center).fillMaxWidth(),
+                textAlign = TextAlign.Center,
                 color = Color(0xFF213E60))
         }
 
@@ -720,7 +721,8 @@ fun CalendarMonthView(
                     .padding(4.dp),
                 contentAlignment = Alignment.Center
             ) {
-                Text(it)
+                Text(it,
+                    color = Color(0xFF213E60))
             }
         }
     }
@@ -783,7 +785,7 @@ fun SubscriptionDetails(selectedDate: LocalDate?, subscriptions: List<Subscripti
             horizontalAlignment = Alignment.Start
         ) {
             Text(
-                "💸 Платежи на ${selectedDate.dayOfMonth}.${selectedDate.monthValue}:",
+                "Платежи на ${selectedDate.dayOfMonth}.${selectedDate.monthValue}:",
                 style = MaterialTheme.typography.titleLarge
             )
             Spacer(Modifier.height(8.dp))
@@ -826,6 +828,9 @@ fun generateDaysForMonth(month: YearMonth): List<LocalDate?> {
     for (i in 1..daysInMonth) {
         list.add(month.atDay(i))
     }
-
+    val remainder = list.size % 7
+    if (remainder != 0) {
+        repeat(7 - remainder) { list.add(null) }
+    }
     return list
 }
