@@ -44,6 +44,22 @@ import androidx.compose.foundation.lazy.items
 import android.content.Context
 import android.net.Uri
 import java.util.UUID
+import okhttp3.MediaType.Companion.toMediaType
+import okhttp3.RequestBody.Companion.toRequestBody
+import android.app.Activity
+
+import okhttp3.OkHttpClient
+import okhttp3.Request
+import okhttp3.Callback
+import okhttp3.Call
+import okhttp3.Response
+
+import okhttp3.MediaType.Companion.toMediaType
+import okhttp3.RequestBody.Companion.toRequestBody
+
+import org.json.JSONObject
+
+import java.io.IOException
 import androidx.compose.ui.platform.LocalDensity
 
 
@@ -261,7 +277,7 @@ fun AppNavigation(
                 )
 
                 is Screen.TelegramAuth -> TelegramAuthScreen(
-                    serverBaseUrl = "https://2ca7618e23c1aa.lhr.life",
+                    serverBaseUrl = "https://droopingly-troughlike-dedra.ngrok-free.dev",
                     onBack = { currentScreen = Screen.Main },
                     onAuthSuccess = { currentScreen = Screen.Main } // Этот колбэк больше не нужен благодаря LaunchedEffect, но можно оставить как заглушку
                 )
@@ -585,19 +601,47 @@ fun TelegramAuthScreen(
     val prefs = remember { context.getSharedPreferences("auth_prefs", Context.MODE_PRIVATE) }
 
     val startAuth: () -> Unit = {
-        // 1. Получаем/генерируем DeviceId для привязки nonce на сервере
-        val deviceId = prefs.getString("local_device_id", UUID.randomUUID().toString()) ?: UUID.randomUUID().toString()
+        val deviceId = prefs.getString(
+            "local_device_id",
+            UUID.randomUUID().toString()
+        ) ?: UUID.randomUUID().toString()
+
         prefs.edit().putString("local_device_id", deviceId).apply()
 
-        // 2. Формируем URL для запуска процесса
-        // Мы открываем URL, который должен инициировать Telegram Login Widget
-        // и запустить POST-запрос к /api/Auth/start на вашем сервере.
-        val browserStartUrl = "$serverBaseUrl/telegram-login.html"
+        val client = okhttp3.OkHttpClient()
 
-        // 3. Открываем браузер
-        val intent = Intent(Intent.ACTION_VIEW, Uri.parse(browserStartUrl))
-        context.startActivity(intent)
+        val json = """
+        { "deviceId": "$deviceId" }
+    """.trimIndent()
+
+        val body = json.toRequestBody("application/json".toMediaType())
+
+        val request = okhttp3.Request.Builder()
+            .url("$serverBaseUrl/api/auth/start")
+            .post(body)
+            .build()
+
+        client.newCall(request).enqueue(object : okhttp3.Callback {
+
+            override fun onFailure(call: Call, e: IOException) {
+                e.printStackTrace()
+            }
+
+            override fun onResponse(call: Call, response: Response) {
+                val responseBody = response.body?.string() ?: return
+                val loginUrl = JSONObject(responseBody).getString("loginUrl")
+
+                // 🔥 ВОТ ЭТО КЛЮЧЕВО
+
+                    val intent = Intent(Intent.ACTION_VIEW, Uri.parse(loginUrl)).apply {
+                        addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                }
+
+                context.startActivity(intent)
+            }
+        })
     }
+
 
     Column(
         modifier = Modifier
