@@ -714,16 +714,27 @@ fun CalendarScreen() {
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            Button(onClick = { currentMonth = currentMonth.minusMonths(1); selectedDate = null }) {
+            Button(
+                onClick = { currentMonth = currentMonth.minusMonths(1); selectedDate = null },
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = Color(0xFF213E60),
+                    contentColor = Color(0xFFF4F2EF)
+                )) {
                 Text("←")
             }
 
             Text(
                 text = "${currentMonth.month.toRussianMonthName()} ${currentMonth.year}",
-                style = MaterialTheme.typography.titleLarge
+                style = MaterialTheme.typography.titleLarge,
+                color = Color(0xFF213E60)
             )
 
-            Button(onClick = { currentMonth = currentMonth.plusMonths(1); selectedDate = null }) {
+            Button(
+                onClick = { currentMonth = currentMonth.plusMonths(1); selectedDate = null },
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = Color(0xFF213E60),
+                    contentColor = Color(0xFFF4F2EF)
+                )) {
                 Text("→")
             }
         }
@@ -790,11 +801,12 @@ fun CalendarMonthView(
                         val isPaymentDay = paymentDates.contains(date)
 
                         Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                            Text(date.dayOfMonth.toString())
+                            Text(date.dayOfMonth.toString(),
+                                color = Color(0xFF213E60))
 
                             if (isPaymentDay) {
                                 Canvas(modifier = Modifier.size(6.dp)) {
-                                    drawCircle(Color.Red)
+                                    drawCircle(Color(0xFFE68C3A))
                                 }
                             }
                         }
@@ -809,7 +821,8 @@ fun CalendarMonthView(
 @Composable
 fun SubscriptionDetails(selectedDate: LocalDate?, subscriptions: List<Subscription>) {
     if (selectedDate == null) {
-        Text("Выберите дату в календаре", style = MaterialTheme.typography.titleMedium)
+        Text("Выберите дату в календаре", style = MaterialTheme.typography.titleMedium,
+            color = Color(0xFF213E60))
         return
     }
 
@@ -830,7 +843,8 @@ fun SubscriptionDetails(selectedDate: LocalDate?, subscriptions: List<Subscripti
         ) {
             Text(
                 "Платежи на ${selectedDate.dayOfMonth}.${selectedDate.monthValue}:",
-                style = MaterialTheme.typography.titleLarge
+                style = MaterialTheme.typography.titleLarge,
+                color = Color(0xFF213E60)
             )
             Spacer(Modifier.height(8.dp))
 
@@ -839,17 +853,19 @@ fun SubscriptionDetails(selectedDate: LocalDate?, subscriptions: List<Subscripti
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(vertical = 4.dp),
-                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
+                    colors = CardDefaults.cardColors(containerColor = Color(0xFFBDCBE4))
                 ) {
                     Column(modifier = Modifier.padding(12.dp)) {
                         Text(
                             text = "${sub.name} (${sub.provider})",
                             style = MaterialTheme.typography.titleMedium,
-                            fontWeight = MaterialTheme.typography.titleMedium.fontWeight
+                            fontWeight = MaterialTheme.typography.titleMedium.fontWeight,
+                            color = Color(0xFF374658)
                         )
                         Text(
                             text = "Цена: ${sub.price} ₽",
-                            style = MaterialTheme.typography.bodyLarge
+                            style = MaterialTheme.typography.bodyLarge,
+                            color = Color(0xFF374658)
                         )
                     }
                 }
