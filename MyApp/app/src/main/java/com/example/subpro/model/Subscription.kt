@@ -9,7 +9,6 @@ enum class SubscriptionPeriod {
 data class Subscription(
     val id: Int,
     val name: String,
-    val provider: String,
     val price: Double,
     val startDate: String,
     val period: SubscriptionPeriod,

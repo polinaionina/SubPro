@@ -47,7 +47,6 @@ object SubscriptionService {
         val newSub = Subscription(
             id = idCounter.getAndIncrement(),
             name = template.name,
-            provider = template.provider,
             price = template.price,
             startDate = LocalDate.now().toString(),
             period = template.period,
@@ -69,7 +68,6 @@ object SubscriptionService {
         val newSub = Subscription(
             id = idCounter.getAndIncrement(),
             name = name,
-            provider = provider,
             price = price,
             startDate = startDate,
             period = period,
@@ -107,7 +105,6 @@ object SubscriptionService {
 
     data class SubscriptionTemplate(
         val name: String,
-        val provider: String,
         val price: Double,
         val period: SubscriptionPeriod
     )

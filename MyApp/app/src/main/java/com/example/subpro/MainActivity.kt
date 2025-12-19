@@ -1,7 +1,6 @@
 package com.example.subpro
 
 import android.Manifest
-import android.app.Activity
 import android.app.DatePickerDialog
 import android.app.NotificationChannel
 import android.app.NotificationManager
@@ -41,7 +40,8 @@ import com.example.subpro.model.Subscription
 import com.example.subpro.model.SubscriptionPeriod
 import com.example.subpro.model.nextPayment
 import com.example.subpro.ui.theme.AddSubscriptionScreen
-import com.example.subpro.ui.theme.asRussianText
+import com.example.subpro.ui.theme.getAvailableNotificationDays
+import com.example.subpro.ui.theme.getDayText
 import java.time.LocalDate
 import java.time.Month
 import java.time.YearMonth
@@ -307,8 +307,7 @@ fun SubscriptionChoiceScreen(
 ) {
     val template = remember {
         SubscriptionService.SubscriptionTemplate(
-            name = "ПЛЮС",
-            provider = "Яндекс",
+            name = "Яндекс плюс",
             price = 400.0,
             period = SubscriptionPeriod.MONTHLY,
         )
@@ -590,11 +589,6 @@ fun SubscriptionCard(
                     color = Color(0xFF213E60)
                 )
                 Text(
-                    text = subscription.provider,
-                    fontSize = 14.sp,
-                    color = Color(0xFF213E60).copy(alpha = 0.7f)
-                )
-                Text(
                     text = "Следующий платёж: ${nextPayment.dayOfMonth}. ${nextPayment.monthValue}. ${nextPayment.year}",
                     fontSize = 12.sp,
                     color = Color(0xFF213E60).copy(alpha = 0.6f)
@@ -619,11 +613,22 @@ fun EditSubscriptionDialog(
     onDelete: (Int) -> Unit
 ) {
     var name by remember { mutableStateOf(subscription.name) }
-    var provider by remember { mutableStateOf(subscription.provider) }
     var priceText by remember { mutableStateOf(subscription.price.toString()) }
     var date by remember { mutableStateOf(LocalDate.parse(subscription.startDate)) }
+    var selectedDays by remember { mutableStateOf(subscription.notificationDaysBefore) }
 
     val context = LocalContext.current
+    val availableDays = remember(subscription.period) {
+        getAvailableNotificationDays(subscription.period)
+    }
+    LaunchedEffect(subscription, availableDays) {
+        if (!availableDays.contains(selectedDays)) {
+            selectedDays = availableDays.first()
+        }
+    }
+
+    var daysExpanded by remember { mutableStateOf(false) }
+    val daysLabel = getDayText(selectedDays, includePrefix = true)
 
     AlertDialog(
         onDismissRequest = onDismiss,
@@ -634,12 +639,6 @@ fun EditSubscriptionDialog(
                     value = name,
                     onValueChange = { name = it },
                     label = { Text("Название") },
-                    singleLine = true
-                )
-                OutlinedTextField(
-                    value = provider,
-                    onValueChange = { provider = it },
-                    label = { Text("Провайдер") },
                     singleLine = true
                 )
                 OutlinedTextField(
@@ -663,6 +662,38 @@ fun EditSubscriptionDialog(
                 ) {
                     Text("Дата списания: $date", color = Color(0xFF213E60))
                 }
+
+                // Выбор за сколько дней напоминать
+                Box {
+                    Button(
+                        onClick = { daysExpanded = true },
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF94B6EF))
+                    ) {
+                        Column(modifier = Modifier.fillMaxWidth()) {
+                            Text("Напомнить", color = Color(0xFF213E60))
+                            Spacer(Modifier.height(2.dp))
+                            Text(daysLabel,
+                                color = Color(0xFF213E60),
+                                fontSize = 16.sp,
+                                fontWeight = FontWeight.Medium)
+                        }
+                    }
+                    DropdownMenu(
+                        expanded = daysExpanded,
+                        onDismissRequest = { daysExpanded = false }
+                    ) {
+                        availableDays.forEach { days ->
+                            DropdownMenuItem(
+                                text = { Text(getDayText(days, includePrefix = false)) },
+                                onClick = {
+                                    selectedDays = days
+                                    daysExpanded = false
+                                }
+                            )
+                        }
+                    }
+                }
             }
         },
         confirmButton = {
@@ -672,9 +703,9 @@ fun EditSubscriptionDialog(
                     onSave(
                         subscription.copy(
                             name = name,
-                            provider = provider,
                             price = price,
-                            startDate = date.toString()
+                            startDate = date.toString(),
+                            notificationDaysBefore = selectedDays
                         )
                     )
                 }
@@ -849,7 +880,7 @@ fun SubscriptionDetails(selectedDate: LocalDate?, subscriptions: List<Subscripti
                 ) {
                     Column(modifier = Modifier.padding(12.dp)) {
                         Text(
-                            text = "${sub.name} (${sub.provider})",
+                            text = sub.name,
                             style = MaterialTheme.typography.titleMedium,
                             fontWeight = MaterialTheme.typography.titleMedium.fontWeight,
                             color = Color(0xFF374658)
