@@ -1,5 +1,6 @@
 package com.example.subpro.data
 
+import android.annotation.SuppressLint
 import android.content.Context
 import com.example.subpro.model.Subscription
 import com.example.subpro.model.SubscriptionPeriod
@@ -8,6 +9,7 @@ import com.google.gson.reflect.TypeToken
 import java.time.LocalDate
 import java.util.concurrent.atomic.AtomicInteger
 
+@SuppressLint("StaticFieldLeak")
 object SubscriptionService {
 
     private const val PREFS = "subscriptions_prefs"
@@ -21,6 +23,21 @@ object SubscriptionService {
     fun init(context: Context) {
         this.context = context.applicationContext
         restoreIdCounter()
+    }
+
+    fun update(subscription: Subscription) {
+        val list = getAllInternal()
+        val idx = list.indexOfFirst { it.id == subscription.id }
+        if (idx != -1) {
+            list[idx] = subscription
+            save(list)
+        }
+    }
+
+    fun delete(id: Int) {
+        val list = getAllInternal()
+        val newList = list.filterNot { it.id == id }
+        save(newList)
     }
 
     // ---------- PUBLIC API ----------

@@ -1,11 +1,15 @@
 package com.example.subpro
 
 import android.Manifest
+import android.app.Activity
+import android.app.DatePickerDialog
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
+import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -14,6 +18,8 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.material3.ButtonDefaults
@@ -22,7 +28,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat
@@ -35,33 +45,16 @@ import com.example.subpro.ui.theme.asRussianText
 import java.time.LocalDate
 import java.time.Month
 import java.time.YearMonth
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.sp
-import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.res.painterResource
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
-import android.content.Context
-import android.net.Uri
 import java.util.UUID
-import okhttp3.MediaType.Companion.toMediaType
-import okhttp3.RequestBody.Companion.toRequestBody
-import android.app.Activity
-
+import okhttp3.Call
+import okhttp3.Callback
 import okhttp3.OkHttpClient
 import okhttp3.Request
-import okhttp3.Callback
-import okhttp3.Call
 import okhttp3.Response
-
-import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.RequestBody.Companion.toRequestBody
-
+import okhttp3.MediaType.Companion.toMediaType
 import org.json.JSONObject
-
 import java.io.IOException
-import androidx.compose.ui.platform.LocalDensity
-
 
 // -------------------------------------------------------------------
 // 1. НАВИГАЦИЯ И ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ
@@ -72,7 +65,7 @@ sealed class Screen(val route: String) {
     object Calendar : Screen("calendar")
     object Add : Screen("add_choice")
     object Form : Screen("add_form")
-    object TelegramAuth : Screen("telegram_auth") // <-- НОВЫЙ ЭКРАН
+    object TelegramAuth : Screen("telegram_auth")
 }
 
 fun Month.toRussianMonthName(): String {
@@ -98,7 +91,6 @@ fun Month.toRussianMonthName(): String {
 
 class MainActivity : ComponentActivity() {
 
-    // Состояние для Compose, которое обновляется после Deep Link
     var telegramAuthSuccess by mutableStateOf(false)
 
     private val requestPermissionLauncher =
@@ -110,10 +102,7 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
 
         createNotificationChannel()
-
-        // --- Обработка Deep Link при запуске ---
         handleIntent(intent)
-        // ----------------------------------------
         SubscriptionService.init(this)
         setContent {
             AppNavigation(
@@ -123,38 +112,33 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-    // --- Обработка Deep Link при возврате из браузера ---
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
         handleIntent(intent)
     }
 
     private fun handleIntent(intent: Intent?) {
-        // Убеждаемся, что intent не null
         val appLinkData: Uri? = intent?.data
         val prefs = getSharedPreferences("auth_prefs", Context.MODE_PRIVATE)
 
-        // Проверяем схему и хост (subpro://auth)
         if (appLinkData != null && appLinkData.scheme == "subpro" && appLinkData.host == "auth") {
             val token = appLinkData.getQueryParameter("token")
             val telegramId = appLinkData.getQueryParameter("telegramId")
 
             if (token != null && telegramId != null) {
-                // Аутентификация успешна. Сохраняем токен и ID
                 prefs.edit().apply {
                     putString("jwt_token", token)
                     putString("telegram_id", telegramId)
                     apply()
                 }
                 println("Telegram Auth Success and Token Saved: ID=$telegramId")
-                telegramAuthSuccess = true // Обновляем состояние для Compose
+                telegramAuthSuccess = true
             } else {
                 println("Telegram Auth Failed: Missing token or telegramId")
                 telegramAuthSuccess = false
             }
         }
     }
-    // -----------------------------------------------------------------
 
     private fun requestNotificationPermissionAndSend() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
@@ -218,7 +202,7 @@ class MainActivity : ComponentActivity() {
 }
 
 // -------------------------------------------------------------------
-// 3. COMPOSE COMPONENTS
+// 3. COMPOSE COMPONENTС
 // -------------------------------------------------------------------
 
 @Composable
@@ -230,15 +214,12 @@ fun AppNavigation(
     val bottomBarScreens = listOf(Screen.Main.route, Screen.Calendar.route)
     val showBottomBar = currentScreen.route in bottomBarScreens
 
-    // Получение Activity для доступа к telegramAuthSuccess
     val context = LocalContext.current
     val activity = remember(context) { context as? MainActivity }
 
-    // Логика перехода на MainScreen после успешного Deep Link
     LaunchedEffect(isTelegramAuthSuccess) {
         if (isTelegramAuthSuccess) {
             currentScreen = Screen.Main
-            // Сбрасываем флаг в Activity для предотвращения повторного вызова
             activity?.telegramAuthSuccess = false
         }
     }
@@ -265,21 +246,18 @@ fun AppNavigation(
                     onGoToTelegramAuth = { currentScreen = Screen.TelegramAuth }
                 )
                 is Screen.Calendar -> CalendarScreen()
-
                 is Screen.Add -> SubscriptionChoiceScreen(
                     onAddCustom = { currentScreen = Screen.Form },
                     onSuccess = { currentScreen = Screen.Main }
                 )
-
                 is Screen.Form -> AddSubscriptionScreen(
                     context = LocalContext.current,
                     onBack = { currentScreen = Screen.Main }
                 )
-
                 is Screen.TelegramAuth -> TelegramAuthScreen(
                     serverBaseUrl = "https://droopingly-troughlike-dedra.ngrok-free.dev",
                     onBack = { currentScreen = Screen.Main },
-                    onAuthSuccess = { currentScreen = Screen.Main } // Этот колбэк больше не нужен благодаря LaunchedEffect, но можно оставить как заглушку
+                    onAuthSuccess = { currentScreen = Screen.Main }
                 )
             }
         }
@@ -300,13 +278,13 @@ fun BottomNavigationBar(
             Triple(Screen.Add, "Добавить", R.drawable.dobavit)
         )
 
-        items.forEach { (screen, label, iconRes) ->
+        items.forEach { (screen, _, iconRes) ->
             val iconSize = if (screen == Screen.Add) 65.dp else 50.dp
             NavigationBarItem(
                 icon = {
                     Icon(
                         painter = painterResource(id = iconRes),
-                        contentDescription = label,
+                        contentDescription = null,
                         modifier = Modifier.size(iconSize),
                         tint = Color.Unspecified
                     )
@@ -327,9 +305,6 @@ fun SubscriptionChoiceScreen(
     onAddCustom: () -> Unit,
     onSuccess: () -> Unit
 ) {
-    val context = LocalContext.current
-    var message by remember { mutableStateOf<String?>(null) }
-
     val template = remember {
         SubscriptionService.SubscriptionTemplate(
             name = "ПЛЮС",
@@ -346,24 +321,32 @@ fun SubscriptionChoiceScreen(
         horizontalAlignment = Alignment.Start,
     ) {
 
-        Box(modifier = Modifier.fillMaxWidth().padding(0.dp),
-
-            contentAlignment = Alignment.Center)
-        {
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(0.dp),
+            contentAlignment = Alignment.Center
+        ) {
             Icon(
                 painter = painterResource(id = R.drawable.strelka),
                 contentDescription = "на главную",
-                modifier = Modifier.align(Alignment.CenterStart).size(48.dp).
-                clickable { onSuccess()},
+                modifier = Modifier
+                    .align(Alignment.CenterStart)
+                    .size(48.dp)
+                    .clickable { onSuccess() },
                 tint = Color.Unspecified
             )
             Spacer(Modifier.width(25.dp))
-            Text("Шаблоны подписок",
+            Text(
+                "Шаблоны подписок",
                 fontSize = 24.sp,
                 fontWeight = FontWeight.Medium,
-                modifier = Modifier.align(Alignment.Center).fillMaxWidth(),
+                modifier = Modifier
+                    .align(Alignment.Center)
+                    .fillMaxWidth(),
                 textAlign = TextAlign.Center,
-                color = Color(0xFF213E60))
+                color = Color(0xFF213E60)
+            )
         }
 
         Spacer(Modifier.height(30.dp))
@@ -371,7 +354,6 @@ fun SubscriptionChoiceScreen(
         Button(
             onClick = {
                 SubscriptionService.addFromTemplate(template)
-                message = "Успешно добавлено: ${template.name} (${template.price.toInt()} ₽/${template.period.asRussianText()})"
                 onSuccess()
             },
             modifier = Modifier
@@ -385,10 +367,12 @@ fun SubscriptionChoiceScreen(
             contentPadding = PaddingValues(0.dp)
         ) {
             Row(
-                modifier = Modifier.fillMaxWidth().padding(16.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.Start
-            ){
+            ) {
                 Icon(
                     painter = painterResource(id = R.drawable.yandex_icon),
                     contentDescription = null,
@@ -396,11 +380,13 @@ fun SubscriptionChoiceScreen(
                     tint = Color.Unspecified
                 )
                 Spacer(Modifier.width(13.dp))
-                Text("Яндекс ПЛЮС",
+                Text(
+                    "Яндекс ПЛЮС",
                     fontSize = 20.sp,
                     fontWeight = FontWeight.Medium,
                     modifier = Modifier.fillMaxWidth(),
-                    textAlign = TextAlign.Start)
+                    textAlign = TextAlign.Start
+                )
             }
         }
     }
@@ -408,7 +394,7 @@ fun SubscriptionChoiceScreen(
         modifier = Modifier
             .fillMaxSize()
             .padding(16.dp)
-    ){
+    ) {
         Button(
             onClick = onAddCustom,
             modifier = Modifier
@@ -423,10 +409,12 @@ fun SubscriptionChoiceScreen(
             contentPadding = PaddingValues(0.dp)
         ) {
             Row(
-                modifier = Modifier.fillMaxWidth().padding(10.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(10.dp),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.Start
-            ){
+            ) {
                 Icon(
                     painter = painterResource(id = R.drawable.plus),
                     contentDescription = null,
@@ -434,16 +422,17 @@ fun SubscriptionChoiceScreen(
                     tint = Color.Unspecified
                 )
                 Spacer(Modifier.width(2.dp))
-                Text("Добавить свое",
+                Text(
+                    "Добавить свое",
                     fontSize = 17.sp,
                     fontWeight = FontWeight.Medium,
                     modifier = Modifier.fillMaxWidth(),
-                    textAlign = TextAlign.Start)
+                    textAlign = TextAlign.Start
+                )
             }
         }
     }
 }
-
 
 @Composable
 fun MainScreen(
@@ -451,6 +440,7 @@ fun MainScreen(
     onGoToTelegramAuth: () -> Unit
 ) {
     var subscriptions by remember { mutableStateOf(SubscriptionService.getAll()) }
+    var selectedSub by remember { mutableStateOf<Subscription?>(null) }
 
     LaunchedEffect(Unit) {
         subscriptions = SubscriptionService.getAll()
@@ -460,7 +450,7 @@ fun MainScreen(
         modifier = Modifier
             .fillMaxSize()
             .padding(16.dp),
-        horizontalAlignment = Alignment. CenterHorizontally
+        horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Text(
             "SubPro",
@@ -472,7 +462,6 @@ fun MainScreen(
 
         Spacer(Modifier.height(35.dp))
 
-        // --- КНОПКА ТЕСТОВОГО УВЕДОМЛЕНИЯ ---
         Button(
             onClick = { onSendNotification() },
             modifier = Modifier
@@ -485,36 +474,38 @@ fun MainScreen(
                 contentColor = Color(0xFF213E60)
             )
         ) {
-            Text("Показать тестовое уведомление",
+            Text(
+                "Показать тестовое уведомление",
                 fontSize = 20.sp,
                 fontWeight = FontWeight.Medium,
                 modifier = Modifier.fillMaxWidth(),
-                textAlign = TextAlign.Start)
+                textAlign = TextAlign.Start
+            )
         }
 
-        // --- НОВАЯ КНОПКА TELEGRAM ---
         Button(
-            onClick = onGoToTelegramAuth, // <-- Вызываем переход на экран аутентификации
+            onClick = onGoToTelegramAuth,
             modifier = Modifier
                 .fillMaxWidth()
                 .height(73.dp)
                 .padding(vertical = 4.dp),
             shape = RoundedCornerShape(15.dp),
             colors = ButtonDefaults.buttonColors(
-                containerColor = Color(0xFFE68C3A), // Контрастный цвет
+                containerColor = Color(0xFFE68C3A),
                 contentColor = Color.White
             )
         ) {
-            Text("Настроить Telegram-уведомления",
+            Text(
+                "Настроить Telegram-уведомления",
                 fontSize = 20.sp,
                 fontWeight = FontWeight.Medium,
                 modifier = Modifier.fillMaxWidth(),
-                textAlign = TextAlign.Start)
+                textAlign = TextAlign.Start
+            )
         }
 
-        Spacer(Modifier.height(15.dp)) // Отделяем кнопки от списка подписок
+        Spacer(Modifier.height(15.dp))
 
-        // --- Существующая логика списка подписок ---
         if (subscriptions.isEmpty()) {
             Text(
                 "У вас пока нет подписок",
@@ -522,38 +513,63 @@ fun MainScreen(
                 color = Color.Gray
             )
         } else {
-            val totalPrice = subscriptions.sumOf { it. price }
+            val totalPrice = subscriptions.sumOf { it.price }
             Text(
                 "Всего подписок: ${subscriptions.size}",
                 style = MaterialTheme.typography.titleLarge,
                 fontWeight = FontWeight.Medium
             )
             Text(
-                "Общая сумма: ${totalPrice. toInt()} ₽/мес",
+                "Общая сумма: ${totalPrice.toInt()} ₽/мес",
                 style = MaterialTheme.typography.titleMedium,
-                color = Color. Gray
+                color = Color.Gray
             )
 
             Spacer(Modifier.height(16.dp))
 
             LazyColumn(
                 modifier = Modifier.fillMaxSize(),
-                verticalArrangement = Arrangement. spacedBy(8.dp)
+                verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 items(subscriptions) { sub ->
-                    SubscriptionCard(subscription = sub)
+                    SubscriptionCard(
+                        subscription = sub,
+                        onClick = { selectedSub = sub }
+                    )
                 }
             }
         }
     }
+
+    selectedSub?.let { sub ->
+        EditSubscriptionDialog(
+            subscription = sub,
+            onDismiss = { selectedSub = null },
+            onSave = { updated ->
+                SubscriptionService.update(updated)
+                subscriptions = SubscriptionService.getAll()
+                selectedSub = null
+            },
+            onDelete = { id ->
+                SubscriptionService.delete(id)
+                subscriptions = SubscriptionService.getAll()
+                selectedSub = null
+            }
+        )
+    }
 }
 
 @Composable
-fun SubscriptionCard(subscription: Subscription) {
+fun SubscriptionCard(
+    subscription: Subscription,
+    onClick: () -> Unit
+) {
     val nextPayment = subscription.nextPayment()
 
     Card(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable { onClick() },
         shape = RoundedCornerShape(15.dp),
         colors = CardDefaults.cardColors(containerColor = Color(0xFF94B6EF))
     ) {
@@ -570,17 +586,17 @@ fun SubscriptionCard(subscription: Subscription) {
                 Text(
                     text = subscription.name,
                     fontSize = 20.sp,
-                    fontWeight = FontWeight. SemiBold,
+                    fontWeight = FontWeight.SemiBold,
                     color = Color(0xFF213E60)
                 )
                 Text(
-                    text = subscription. provider,
+                    text = subscription.provider,
                     fontSize = 14.sp,
-                    color = Color(0xFF213E60). copy(alpha = 0.7f)
+                    color = Color(0xFF213E60).copy(alpha = 0.7f)
                 )
                 Text(
                     text = "Следующий платёж: ${nextPayment.dayOfMonth}. ${nextPayment.monthValue}. ${nextPayment.year}",
-                    fontSize = 12. sp,
+                    fontSize = 12.sp,
                     color = Color(0xFF213E60).copy(alpha = 0.6f)
                 )
             }
@@ -596,118 +612,93 @@ fun SubscriptionCard(subscription: Subscription) {
 }
 
 @Composable
-fun TelegramAuthScreen(
-    serverBaseUrl: String,
-    onBack: () -> Unit,
-    onAuthSuccess: () -> Unit
+fun EditSubscriptionDialog(
+    subscription: Subscription,
+    onDismiss: () -> Unit,
+    onSave: (Subscription) -> Unit,
+    onDelete: (Int) -> Unit
 ) {
+    var name by remember { mutableStateOf(subscription.name) }
+    var provider by remember { mutableStateOf(subscription.provider) }
+    var priceText by remember { mutableStateOf(subscription.price.toString()) }
+    var date by remember { mutableStateOf(LocalDate.parse(subscription.startDate)) }
+
     val context = LocalContext.current
-    val prefs = remember { context.getSharedPreferences("auth_prefs", Context.MODE_PRIVATE) }
 
-    val startAuth: () -> Unit = {
-        val deviceId = prefs.getString(
-            "local_device_id",
-            UUID.randomUUID().toString()
-        ) ?: UUID.randomUUID().toString()
-
-        prefs.edit().putString("local_device_id", deviceId).apply()
-
-        val client = okhttp3.OkHttpClient()
-
-        val json = """
-        { "deviceId": "$deviceId" }
-    """.trimIndent()
-
-        val body = json.toRequestBody("application/json".toMediaType())
-
-        val request = okhttp3.Request.Builder()
-            .url("$serverBaseUrl/api/auth/start")
-            .post(body)
-            .build()
-
-        client.newCall(request).enqueue(object : okhttp3.Callback {
-
-            override fun onFailure(call: Call, e: IOException) {
-                e.printStackTrace()
-            }
-
-            override fun onResponse(call: Call, response: Response) {
-                val responseBody = response.body?.string() ?: return
-                val loginUrl = JSONObject(responseBody).getString("loginUrl")
-
-                // 🔥 ВОТ ЭТО КЛЮЧЕВО
-
-                    val intent = Intent(Intent.ACTION_VIEW, Uri.parse(loginUrl)).apply {
-                        addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("Редактировать подписку") },
+        text = {
+            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                OutlinedTextField(
+                    value = name,
+                    onValueChange = { name = it },
+                    label = { Text("Название") },
+                    singleLine = true
+                )
+                OutlinedTextField(
+                    value = provider,
+                    onValueChange = { provider = it },
+                    label = { Text("Провайдер") },
+                    singleLine = true
+                )
+                OutlinedTextField(
+                    value = priceText,
+                    onValueChange = { priceText = it },
+                    label = { Text("Цена") },
+                    singleLine = true
+                )
+                Button(
+                    onClick = {
+                        DatePickerDialog(
+                            context,
+                            { _, y, m, d -> date = LocalDate.of(y, m + 1, d) },
+                            date.year,
+                            date.monthValue - 1,
+                            date.dayOfMonth
+                        ).show()
+                    },
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF94B6EF))
+                ) {
+                    Text("Дата списания: $date", color = Color(0xFF213E60))
                 }
-
-                context.startActivity(intent)
             }
-        })
-    }
-
-
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp),
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        // Кнопка назад
-        Icon(
-            painter = painterResource(id = R.drawable.strelka),
-            contentDescription = "на главную",
-            modifier = Modifier
-                .size(48.dp)
-                .align(Alignment.Start)
-                .clickable { onBack() },
-            tint = Color.Unspecified
-        )
-        Spacer(Modifier.height(30.dp))
-        Text(
-            "Настройка Telegram-уведомлений",
-            style = MaterialTheme.typography.headlineSmall,
-            textAlign = TextAlign.Center,
-            fontWeight = FontWeight.SemiBold
-        )
-        Spacer(Modifier.height(30.dp))
-
-        Button(
-            onClick = startAuth, // <-- Запуск процесса
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(73.dp),
-            shape = RoundedCornerShape(15.dp),
-            colors = ButtonDefaults.buttonColors(
-                containerColor = Color(0xFF2196F3), // Цвет Telegram
-                contentColor = Color.White
-            )
-        ) {
-            Text("Войти через Telegram",
-                fontSize = 20.sp,
-                fontWeight = FontWeight.Medium)
+        },
+        confirmButton = {
+            TextButton(
+                onClick = {
+                    val price = priceText.toDoubleOrNull() ?: return@TextButton
+                    onSave(
+                        subscription.copy(
+                            name = name,
+                            provider = provider,
+                            price = price,
+                            startDate = date.toString()
+                        )
+                    )
+                }
+            ) { Text("Сохранить") }
+        },
+        dismissButton = {
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                TextButton(onClick = { onDelete(subscription.id) }) {
+                    Text("Удалить", color = Color(0xFFD32F2F))
+                }
+                TextButton(onClick = onDismiss) { Text("Отмена") }
+            }
         }
-
-        Spacer(Modifier.height(30.dp))
-        Text(
-            "Вас перекинет в браузер для входа через Telegram. После успешной аутентификации вы автоматически вернетесь в приложение с сохраненным токеном.",
-            textAlign = TextAlign.Center,
-            style = MaterialTheme.typography.bodyMedium,
-            color = Color.Gray
-        )
-    }
+    )
 }
 
 // -------------------------------------------------------------------
-// 4. CALENDAR COMPONENTS (Возвращены для разрешения ссылок)
+// 4. CALENDAR COMPONENTS
 // -------------------------------------------------------------------
 
 @Composable
 fun CalendarScreen() {
     var currentMonth by remember { mutableStateOf(YearMonth.now()) }
-
     var selectedDate by remember { mutableStateOf<LocalDate?>(null) }
-
     var subscriptions by remember { mutableStateOf(SubscriptionService.getAll()) }
 
     LaunchedEffect(Unit) {
@@ -727,9 +718,8 @@ fun CalendarScreen() {
                 colors = ButtonDefaults.buttonColors(
                     containerColor = Color(0xFF213E60),
                     contentColor = Color(0xFFF4F2EF)
-                )) {
-                Text("←")
-            }
+                )
+            ) { Text("←") }
 
             Text(
                 text = "${currentMonth.month.toRussianMonthName()} ${currentMonth.year}",
@@ -742,9 +732,8 @@ fun CalendarScreen() {
                 colors = ButtonDefaults.buttonColors(
                     containerColor = Color(0xFF213E60),
                     contentColor = Color(0xFFF4F2EF)
-                )) {
-                Text("→")
-            }
+                )
+            ) { Text("→") }
         }
 
         Spacer(Modifier.height(16.dp))
@@ -752,7 +741,6 @@ fun CalendarScreen() {
         CalendarMonthView(
             month = currentMonth,
             subscriptions = subscriptions,
-
             onDateSelected = { date -> selectedDate = date }
         )
 
@@ -761,7 +749,6 @@ fun CalendarScreen() {
         SubscriptionDetails(selectedDate = selectedDate, subscriptions = subscriptions)
     }
 }
-
 
 @Composable
 fun CalendarMonthView(
@@ -775,7 +762,6 @@ fun CalendarMonthView(
         subscriptions.map { it.nextPayment() }
     }
 
-
     Row(Modifier.fillMaxWidth()) {
         listOf("Пн", "Вт", "Ср", "Чт", "Пт", "Сб", "Вс").forEach {
             Box(
@@ -784,14 +770,12 @@ fun CalendarMonthView(
                     .padding(4.dp),
                 contentAlignment = Alignment.Center
             ) {
-                Text(it,
-                    color = Color(0xFF213E60))
+                Text(it, color = Color(0xFF213E60))
             }
         }
     }
 
     Spacer(Modifier.height(8.dp))
-
 
     days.chunked(7).forEach { week ->
         Row(Modifier.fillMaxWidth()) {
@@ -801,7 +785,6 @@ fun CalendarMonthView(
                         .weight(1f)
                         .padding(4.dp)
                         .height(50.dp)
-
                         .clickable { onDateSelected(date) },
                     contentAlignment = Alignment.Center
                 ) {
@@ -809,8 +792,7 @@ fun CalendarMonthView(
                         val isPaymentDay = paymentDates.contains(date)
 
                         Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                            Text(date.dayOfMonth.toString(),
-                                color = Color(0xFF213E60))
+                            Text(date.dayOfMonth.toString(), color = Color(0xFF213E60))
 
                             if (isPaymentDay) {
                                 Canvas(modifier = Modifier.size(6.dp)) {
@@ -825,12 +807,14 @@ fun CalendarMonthView(
     }
 }
 
-
 @Composable
 fun SubscriptionDetails(selectedDate: LocalDate?, subscriptions: List<Subscription>) {
     if (selectedDate == null) {
-        Text("Выберите дату в календаре", style = MaterialTheme.typography.titleMedium,
-            color = Color(0xFF213E60))
+        Text(
+            "Выберите дату в календаре",
+            style = MaterialTheme.typography.titleMedium,
+            color = Color(0xFF213E60)
+        )
         return
     }
 
@@ -882,7 +866,6 @@ fun SubscriptionDetails(selectedDate: LocalDate?, subscriptions: List<Subscripti
     }
 }
 
-
 fun generateDaysForMonth(month: YearMonth): List<LocalDate?> {
     val firstDay = month.atDay(1)
     val daysInMonth = month.lengthOfMonth()
@@ -901,4 +884,105 @@ fun generateDaysForMonth(month: YearMonth): List<LocalDate?> {
         repeat(7 - remainder) { list.add(null) }
     }
     return list
+}
+
+@Composable
+fun TelegramAuthScreen(
+    serverBaseUrl: String,
+    onBack: () -> Unit,
+    onAuthSuccess: () -> Unit
+) {
+    val context = LocalContext.current
+    val prefs = remember { context.getSharedPreferences("auth_prefs", Context.MODE_PRIVATE) }
+
+    val startAuth: () -> Unit = {
+        val deviceId = prefs.getString(
+            "local_device_id",
+            UUID.randomUUID().toString()
+        ) ?: UUID.randomUUID().toString()
+
+        prefs.edit().putString("local_device_id", deviceId).apply()
+
+        val client = OkHttpClient()
+
+        val json = """
+        { "deviceId": "$deviceId" }
+    """.trimIndent()
+
+        val body = json.toRequestBody("application/json".toMediaType())
+
+        val request = Request.Builder()
+            .url("$serverBaseUrl/api/auth/start")
+            .post(body)
+            .build()
+
+        client.newCall(request).enqueue(object : Callback {
+
+            override fun onFailure(call: Call, e: IOException) {
+                e.printStackTrace()
+            }
+
+            override fun onResponse(call: Call, response: Response) {
+                val responseBody = response.body?.string() ?: return
+                val loginUrl = JSONObject(responseBody).getString("loginUrl")
+
+                val intent = Intent(Intent.ACTION_VIEW, Uri.parse(loginUrl)).apply {
+                    addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                }
+
+                context.startActivity(intent)
+            }
+        })
+    }
+
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Icon(
+            painter = painterResource(id = R.drawable.strelka),
+            contentDescription = "на главную",
+            modifier = Modifier
+                .size(48.dp)
+                .align(Alignment.Start)
+                .clickable { onBack() },
+            tint = Color.Unspecified
+        )
+        Spacer(Modifier.height(30.dp))
+        Text(
+            "Настройка Telegram-уведомлений",
+            style = MaterialTheme.typography.headlineSmall,
+            textAlign = TextAlign.Center,
+            fontWeight = FontWeight.SemiBold
+        )
+        Spacer(Modifier.height(30.dp))
+
+        Button(
+            onClick = startAuth,
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(73.dp),
+            shape = RoundedCornerShape(15.dp),
+            colors = ButtonDefaults.buttonColors(
+                containerColor = Color(0xFF2196F3),
+                contentColor = Color.White
+            )
+        ) {
+            Text(
+                "Войти через Telegram",
+                fontSize = 20.sp,
+                fontWeight = FontWeight.Medium
+            )
+        }
+
+        Spacer(Modifier.height(30.dp))
+        Text(
+            "Вас перекинет в браузер для входа через Telegram. После успешной аутентификации вы автоматически вернетесь в приложение с сохраненным токеном.",
+            textAlign = TextAlign.Center,
+            style = MaterialTheme.typography.bodyMedium,
+            color = Color.Gray
+        )
+    }
 }
