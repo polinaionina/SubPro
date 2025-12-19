@@ -8,6 +8,14 @@ import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import java.time.LocalDate
 import java.util.concurrent.atomic.AtomicInteger
+import okhttp3.OkHttpClient
+import okhttp3.Request
+import okhttp3.Call
+import okhttp3.Callback
+import okhttp3.Response
+import okhttp3.MediaType.Companion.toMediaType
+import okhttp3.RequestBody.Companion.toRequestBody
+import java.io.IOException
 
 @SuppressLint("StaticFieldLeak")
 object SubscriptionService {
@@ -31,13 +39,19 @@ object SubscriptionService {
         if (idx != -1) {
             list[idx] = subscription
             save(list)
+            sendSubscriptionEvent("UPDATE", subscription)
         }
     }
 
     fun delete(id: Int) {
         val list = getAllInternal()
+        val deleted = list.firstOrNull { it.id == id }
         val newList = list.filterNot { it.id == id }
         save(newList)
+
+        if (deleted != null) {
+            sendSubscriptionEvent("DELETE", deleted)
+        }
     }
 
     fun getById(id: Int): Subscription? = getAllInternal().firstOrNull { it.id == id }
@@ -56,6 +70,7 @@ object SubscriptionService {
         )
         list.add(newSub)
         save(list)
+        sendSubscriptionEvent("CREATE", newSub)
     }
 
     fun add(
@@ -109,4 +124,40 @@ object SubscriptionService {
         val price: Double,
         val period: SubscriptionPeriod
     )
+
+    private fun sendSubscriptionEvent(
+        action: String,
+        subscription: Subscription?
+    ) {
+        val prefs = context.getSharedPreferences("auth_prefs", Context.MODE_PRIVATE)
+
+        val token = prefs.getString("jwt_token", null) ?: return
+        val deviceId = prefs.getString("local_device_id", null) ?: return
+
+        val body = mapOf(
+            "action" to action,
+            "deviceId" to deviceId,
+            "subscription" to subscription
+        )
+
+        val json = gson.toJson(body)
+
+        val requestBody = json.toRequestBody("application/json".toMediaType())
+
+        val request = Request.Builder()
+            .url("https://ТВОЙ_СЕРВЕР/api/subscriptions/event")
+            .addHeader("Authorization", "Bearer $token")
+            .post(requestBody)
+            .build()
+
+        OkHttpClient().newCall(request).enqueue(object : Callback {
+            override fun onFailure(call: Call, e: IOException) {
+                e.printStackTrace()
+            }
+
+            override fun onResponse(call: Call, response: Response) {
+                response.close()
+            }
+        })
+    }
 }

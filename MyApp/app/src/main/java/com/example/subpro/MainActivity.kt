@@ -446,27 +446,6 @@ fun MainScreen(
         Spacer(Modifier.height(35.dp))
 
         Button(
-            onClick = { onSendNotification() },
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(73.dp)
-                .padding(vertical = 4.dp),
-            shape = RoundedCornerShape(15.dp),
-            colors = ButtonDefaults.buttonColors(
-                containerColor = Color(0xFF94B6EF),
-                contentColor = Color(0xFF213E60)
-            )
-        ) {
-            Text(
-                "Показать тестовое уведомление",
-                fontSize = 20.sp,
-                fontWeight = FontWeight.Medium,
-                modifier = Modifier.fillMaxWidth(),
-                textAlign = TextAlign.Start
-            )
-        }
-
-        Button(
             onClick = onGoToTelegramAuth,
             modifier = Modifier
                 .fillMaxWidth()
