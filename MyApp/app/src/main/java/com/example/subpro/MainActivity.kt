@@ -114,7 +114,7 @@ class MainActivity : ComponentActivity() {
         // --- Обработка Deep Link при запуске ---
         handleIntent(intent)
         // ----------------------------------------
-
+        SubscriptionService.init(this)
         setContent {
             AppNavigation(
                 onSendNotification = { requestNotificationPermissionAndSend() },
