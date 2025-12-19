@@ -70,7 +70,6 @@ object SubscriptionService {
         )
         list.add(newSub)
         save(list)
-        sendSubscriptionEvent("CREATE", newSub)
     }
 
     fun add(
@@ -91,6 +90,7 @@ object SubscriptionService {
         )
         list.add(newSub)
         save(list)
+        sendSubscriptionEvent("CREATE", newSub)
     }
 
     fun getAll(): List<Subscription> = getAllInternal()
