@@ -40,6 +40,8 @@ object SubscriptionService {
         save(newList)
     }
 
+    fun getById(id: Int): Subscription? = getAllInternal().firstOrNull { it.id == id }
+
     // ---------- PUBLIC API ----------
 
     fun addFromTemplate(template: SubscriptionTemplate) {
@@ -58,7 +60,6 @@ object SubscriptionService {
 
     fun add(
         name: String,
-        provider: String,
         price: Double,
         startDate: String,
         period: SubscriptionPeriod,

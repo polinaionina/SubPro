@@ -40,54 +40,40 @@ import com.example.subpro.model.Subscription
 import com.example.subpro.model.SubscriptionPeriod
 import com.example.subpro.model.nextPayment
 import com.example.subpro.ui.theme.AddSubscriptionScreen
-import com.example.subpro.ui.theme.getAvailableNotificationDays
-import com.example.subpro.ui.theme.getDayText
+import com.example.subpro.ui.theme.asRussianText
 import java.time.LocalDate
 import java.time.Month
 import java.time.YearMonth
 import java.util.UUID
-import okhttp3.Call
-import okhttp3.Callback
-import okhttp3.OkHttpClient
-import okhttp3.Request
-import okhttp3.Response
-import okhttp3.RequestBody.Companion.toRequestBody
+import okhttp3.*
 import okhttp3.MediaType.Companion.toMediaType
+import okhttp3.RequestBody.Companion.toRequestBody
 import org.json.JSONObject
 import java.io.IOException
-
-// -------------------------------------------------------------------
-// 1. НАВИГАЦИЯ И ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ
-// -------------------------------------------------------------------
 
 sealed class Screen(val route: String) {
     object Main : Screen("main")
     object Calendar : Screen("calendar")
     object Add : Screen("add_choice")
     object Form : Screen("add_form")
+    data class Edit(val id: Int) : Screen("edit")
     object TelegramAuth : Screen("telegram_auth")
 }
 
-fun Month.toRussianMonthName(): String {
-    return when (this) {
-        Month.JANUARY -> "Январь"
-        Month.FEBRUARY -> "Февраль"
-        Month.MARCH -> "Март"
-        Month.APRIL -> "Апрель"
-        Month.MAY -> "Май"
-        Month.JUNE -> "Июнь "
-        Month.JULY -> "Июль"
-        Month.AUGUST -> "Август"
-        Month.SEPTEMBER -> "Сентябрь"
-        Month.OCTOBER -> "Октябрь"
-        Month.NOVEMBER -> "Ноябрь"
-        Month.DECEMBER -> "Декабрь"
-    }
+fun Month.toRussianMonthName(): String = when (this) {
+    Month.JANUARY -> "Январь"
+    Month.FEBRUARY -> "Февраль"
+    Month.MARCH -> "Март"
+    Month.APRIL -> "Апрель"
+    Month.MAY -> "Май"
+    Month.JUNE -> "Июнь "
+    Month.JULY -> "Июль"
+    Month.AUGUST -> "Август"
+    Month.SEPTEMBER -> "Сентябрь"
+    Month.OCTOBER -> "Октябрь"
+    Month.NOVEMBER -> "Ноябрь"
+    Month.DECEMBER -> "Декабрь"
 }
-
-// -------------------------------------------------------------------
-// 2. MAIN ACTIVITY
-// -------------------------------------------------------------------
 
 class MainActivity : ComponentActivity() {
 
@@ -100,7 +86,6 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
         createNotificationChannel()
         handleIntent(intent)
         SubscriptionService.init(this)
@@ -131,10 +116,8 @@ class MainActivity : ComponentActivity() {
                     putString("telegram_id", telegramId)
                     apply()
                 }
-                println("Telegram Auth Success and Token Saved: ID=$telegramId")
                 telegramAuthSuccess = true
             } else {
-                println("Telegram Auth Failed: Missing token or telegramId")
                 telegramAuthSuccess = false
             }
         }
@@ -201,10 +184,6 @@ class MainActivity : ComponentActivity() {
     }
 }
 
-// -------------------------------------------------------------------
-// 3. COMPOSE COMPONENTС
-// -------------------------------------------------------------------
-
 @Composable
 fun AppNavigation(
     onSendNotification: () -> Unit,
@@ -240,10 +219,11 @@ fun AppNavigation(
                 .padding(paddingValues),
             color = Color(0xFFF4F2EF)
         ) {
-            when (currentScreen) {
+            when (val screen = currentScreen) {
                 is Screen.Main -> MainScreen(
                     onSendNotification = onSendNotification,
-                    onGoToTelegramAuth = { currentScreen = Screen.TelegramAuth }
+                    onGoToTelegramAuth = { currentScreen = Screen.TelegramAuth },
+                    onEditSubscription = { id -> currentScreen = Screen.Edit(id) }
                 )
                 is Screen.Calendar -> CalendarScreen()
                 is Screen.Add -> SubscriptionChoiceScreen(
@@ -252,7 +232,13 @@ fun AppNavigation(
                 )
                 is Screen.Form -> AddSubscriptionScreen(
                     context = LocalContext.current,
-                    onBack = { currentScreen = Screen.Main }
+                    onBack = { currentScreen = Screen.Main },
+                    subscriptionId = null
+                )
+                is Screen.Edit -> AddSubscriptionScreen(
+                    context = LocalContext.current,
+                    onBack = { currentScreen = Screen.Main },
+                    subscriptionId = screen.id
                 )
                 is Screen.TelegramAuth -> TelegramAuthScreen(
                     serverBaseUrl = "https://droopingly-troughlike-dedra.ngrok-free.dev",
@@ -269,9 +255,7 @@ fun BottomNavigationBar(
     currentScreen: Screen,
     onScreenSelected: (Screen) -> Unit
 ) {
-    NavigationBar(
-        containerColor = Color(0xFFF4F2EF)
-    ) {
+    NavigationBar(containerColor = Color(0xFFF4F2EF)) {
         val items = listOf(
             Triple(Screen.Main, "Главная", R.drawable.menu),
             Triple(Screen.Calendar, "Календарь", R.drawable.today),
@@ -307,7 +291,7 @@ fun SubscriptionChoiceScreen(
 ) {
     val template = remember {
         SubscriptionService.SubscriptionTemplate(
-            name = "Яндекс плюс",
+            name = "ПЛЮС",
             price = 400.0,
             period = SubscriptionPeriod.MONTHLY,
         )
@@ -436,10 +420,10 @@ fun SubscriptionChoiceScreen(
 @Composable
 fun MainScreen(
     onSendNotification: () -> Unit,
-    onGoToTelegramAuth: () -> Unit
+    onGoToTelegramAuth: () -> Unit,
+    onEditSubscription: (Int) -> Unit
 ) {
     var subscriptions by remember { mutableStateOf(SubscriptionService.getAll()) }
-    var selectedSub by remember { mutableStateOf<Subscription?>(null) }
 
     LaunchedEffect(Unit) {
         subscriptions = SubscriptionService.getAll()
@@ -533,28 +517,11 @@ fun MainScreen(
                 items(subscriptions) { sub ->
                     SubscriptionCard(
                         subscription = sub,
-                        onClick = { selectedSub = sub }
+                        onClick = { onEditSubscription(sub.id) }
                     )
                 }
             }
         }
-    }
-
-    selectedSub?.let { sub ->
-        EditSubscriptionDialog(
-            subscription = sub,
-            onDismiss = { selectedSub = null },
-            onSave = { updated ->
-                SubscriptionService.update(updated)
-                subscriptions = SubscriptionService.getAll()
-                selectedSub = null
-            },
-            onDelete = { id ->
-                SubscriptionService.delete(id)
-                subscriptions = SubscriptionService.getAll()
-                selectedSub = null
-            }
-        )
     }
 }
 
@@ -604,127 +571,6 @@ fun SubscriptionCard(
         }
     }
 }
-
-@Composable
-fun EditSubscriptionDialog(
-    subscription: Subscription,
-    onDismiss: () -> Unit,
-    onSave: (Subscription) -> Unit,
-    onDelete: (Int) -> Unit
-) {
-    var name by remember { mutableStateOf(subscription.name) }
-    var priceText by remember { mutableStateOf(subscription.price.toString()) }
-    var date by remember { mutableStateOf(LocalDate.parse(subscription.startDate)) }
-    var selectedDays by remember { mutableStateOf(subscription.notificationDaysBefore) }
-
-    val context = LocalContext.current
-    val availableDays = remember(subscription.period) {
-        getAvailableNotificationDays(subscription.period)
-    }
-    LaunchedEffect(subscription, availableDays) {
-        if (!availableDays.contains(selectedDays)) {
-            selectedDays = availableDays.first()
-        }
-    }
-
-    var daysExpanded by remember { mutableStateOf(false) }
-    val daysLabel = getDayText(selectedDays, includePrefix = true)
-
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        title = { Text("Редактировать подписку") },
-        text = {
-            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                OutlinedTextField(
-                    value = name,
-                    onValueChange = { name = it },
-                    label = { Text("Название") },
-                    singleLine = true
-                )
-                OutlinedTextField(
-                    value = priceText,
-                    onValueChange = { priceText = it },
-                    label = { Text("Цена") },
-                    singleLine = true
-                )
-                Button(
-                    onClick = {
-                        DatePickerDialog(
-                            context,
-                            { _, y, m, d -> date = LocalDate.of(y, m + 1, d) },
-                            date.year,
-                            date.monthValue - 1,
-                            date.dayOfMonth
-                        ).show()
-                    },
-                    modifier = Modifier.fillMaxWidth(),
-                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF94B6EF))
-                ) {
-                    Text("Дата списания: $date", color = Color(0xFF213E60))
-                }
-
-                // Выбор за сколько дней напоминать
-                Box {
-                    Button(
-                        onClick = { daysExpanded = true },
-                        modifier = Modifier.fillMaxWidth(),
-                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF94B6EF))
-                    ) {
-                        Column(modifier = Modifier.fillMaxWidth()) {
-                            Text("Напомнить", color = Color(0xFF213E60))
-                            Spacer(Modifier.height(2.dp))
-                            Text(daysLabel,
-                                color = Color(0xFF213E60),
-                                fontSize = 16.sp,
-                                fontWeight = FontWeight.Medium)
-                        }
-                    }
-                    DropdownMenu(
-                        expanded = daysExpanded,
-                        onDismissRequest = { daysExpanded = false }
-                    ) {
-                        availableDays.forEach { days ->
-                            DropdownMenuItem(
-                                text = { Text(getDayText(days, includePrefix = false)) },
-                                onClick = {
-                                    selectedDays = days
-                                    daysExpanded = false
-                                }
-                            )
-                        }
-                    }
-                }
-            }
-        },
-        confirmButton = {
-            TextButton(
-                onClick = {
-                    val price = priceText.toDoubleOrNull() ?: return@TextButton
-                    onSave(
-                        subscription.copy(
-                            name = name,
-                            price = price,
-                            startDate = date.toString(),
-                            notificationDaysBefore = selectedDays
-                        )
-                    )
-                }
-            ) { Text("Сохранить") }
-        },
-        dismissButton = {
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                TextButton(onClick = { onDelete(subscription.id) }) {
-                    Text("Удалить", color = Color(0xFFD32F2F))
-                }
-                TextButton(onClick = onDismiss) { Text("Отмена") }
-            }
-        }
-    )
-}
-
-// -------------------------------------------------------------------
-// 4. CALENDAR COMPONENTS
-// -------------------------------------------------------------------
 
 @Composable
 fun CalendarScreen() {
@@ -900,20 +746,12 @@ fun SubscriptionDetails(selectedDate: LocalDate?, subscriptions: List<Subscripti
 fun generateDaysForMonth(month: YearMonth): List<LocalDate?> {
     val firstDay = month.atDay(1)
     val daysInMonth = month.lengthOfMonth()
-
     val shift = (firstDay.dayOfWeek.value - 1) % 7
-
     val list = mutableListOf<LocalDate?>()
-
     repeat(shift) { list.add(null) }
-
-    for (i in 1..daysInMonth) {
-        list.add(month.atDay(i))
-    }
+    for (i in 1..daysInMonth) list.add(month.atDay(i))
     val remainder = list.size % 7
-    if (remainder != 0) {
-        repeat(7 - remainder) { list.add(null) }
-    }
+    if (remainder != 0) repeat(7 - remainder) { list.add(null) }
     return list
 }
 
