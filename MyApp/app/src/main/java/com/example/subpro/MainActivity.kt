@@ -450,7 +450,11 @@ fun MainScreen(
     onSendNotification: () -> Unit,
     onGoToTelegramAuth: () -> Unit
 ) {
-    val subscriptions = remember { SubscriptionService.getAll() }
+    var subscriptions by remember { mutableStateOf(SubscriptionService.getAll()) }
+
+    LaunchedEffect(Unit) {
+        subscriptions = SubscriptionService.getAll()
+    }
 
     Column(
         modifier = Modifier
@@ -704,7 +708,11 @@ fun CalendarScreen() {
 
     var selectedDate by remember { mutableStateOf<LocalDate?>(null) }
 
-    val subscriptions = remember { SubscriptionService.getAll() }
+    var subscriptions by remember { mutableStateOf(SubscriptionService.getAll()) }
+
+    LaunchedEffect(Unit) {
+        subscriptions = SubscriptionService.getAll()
+    }
 
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,

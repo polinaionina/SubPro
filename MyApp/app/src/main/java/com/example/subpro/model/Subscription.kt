@@ -11,13 +11,13 @@ data class Subscription(
     val name: String,
     val provider: String,
     val price: Double,
-    val startDate: LocalDate,
+    val startDate: String,
     val period: SubscriptionPeriod,
     val notificationDaysBefore: Int
 )
 
 fun Subscription.nextPayment(): LocalDate {
-    var nextDate = this.startDate
+    var nextDate = LocalDate.parse(startDate)
 
     while (!nextDate.isAfter(LocalDate.now())) {
         nextDate = when (this.period) {

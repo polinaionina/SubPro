@@ -326,7 +326,7 @@ fun AddSubscriptionScreen(
                         name = name,
                         provider = provider,
                         price = priceDouble,
-                        startDate = date,
+                        startDate = date.toString(),
                         period = period,
                         notificationDaysBefore = notificationDaysBefore
                     )

@@ -32,7 +32,7 @@ object SubscriptionService {
             name = template.name,
             provider = template.provider,
             price = template.price,
-            startDate = LocalDate.now(),
+            startDate = LocalDate.now().toString(),
             period = template.period,
             notificationDaysBefore = 3
         )
@@ -44,7 +44,7 @@ object SubscriptionService {
         name: String,
         provider: String,
         price: Double,
-        startDate: LocalDate,
+        startDate: String,
         period: SubscriptionPeriod,
         notificationDaysBefore: Int
     ) {
