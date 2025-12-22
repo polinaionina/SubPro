@@ -56,8 +56,6 @@ object SubscriptionService {
 
     fun getById(id: Int): Subscription? = getAllInternal().firstOrNull { it.id == id }
 
-    // ---------- PUBLIC API ----------
-
     fun addFromTemplate(template: SubscriptionTemplate) {
         val list = getAllInternal()
         val newSub = Subscription(
@@ -95,8 +93,6 @@ object SubscriptionService {
 
     fun getAll(): List<Subscription> = getAllInternal()
 
-    // ---------- INTERNAL ----------
-
     private fun getAllInternal(): MutableList<Subscription> {
         val json = prefs().getString(KEY, null) ?: return mutableListOf()
         val type = object : TypeToken<MutableList<Subscription>>() {}.type
@@ -117,7 +113,6 @@ object SubscriptionService {
     private fun prefs() =
         context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
 
-    // ---------- TEMPLATE ----------
 
     data class SubscriptionTemplate(
         val name: String,

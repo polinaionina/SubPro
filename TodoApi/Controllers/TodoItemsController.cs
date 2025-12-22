@@ -16,7 +16,6 @@ public class TodoItemsController : ControllerBase
         _context = context;
     }
 
-    // GET: api/TodoItems
     [HttpGet]
     public async Task<ActionResult<IEnumerable<TodoItemDTO>>> GetTodoItems()
     {
@@ -25,7 +24,6 @@ public class TodoItemsController : ControllerBase
             .ToListAsync();
     }
 
-    // GET: api/TodoItems/5
     [HttpGet("{id}")]
     public async Task<ActionResult<TodoItemDTO>> GetTodoItem(long id)
     {
@@ -39,7 +37,6 @@ public class TodoItemsController : ControllerBase
         return ItemToDTO(todoItem);
     }
 
-    // PUT: api/TodoItems/5
     [HttpPut("{id}")]
     public async Task<IActionResult> PutTodoItem(long id, TodoItemDTO todoDTO)
     {
@@ -54,7 +51,6 @@ public class TodoItemsController : ControllerBase
             return NotFound();
         }
 
-        // копируем свойства DTO → Entity
         CopyProperties(todoDTO, todoItem);
 
         try
@@ -69,11 +65,9 @@ public class TodoItemsController : ControllerBase
         return NoContent();
     }
 
-    // POST: api/TodoItems
     [HttpPost]
     public async Task<ActionResult<TodoItemDTO>> PostTodoItem(TodoItemDTO todoDTO)
     {
-        // 🔍 Логирование свойств DTO через рефлексию
         foreach (var prop in todoDTO.GetType().GetProperties())
         {
             Console.WriteLine($"DTO Property: {prop.Name} = {prop.GetValue(todoDTO)}");
@@ -81,7 +75,6 @@ public class TodoItemsController : ControllerBase
 
         var todoItem = new TodoItem();
         
-        // копируем свойства DTO → Entity
         CopyProperties(todoDTO, todoItem);
 
         _context.TodoItems.Add(todoItem);
@@ -93,7 +86,6 @@ public class TodoItemsController : ControllerBase
             ItemToDTO(todoItem));
     }
 
-    // DELETE: api/TodoItems/5
     [HttpDelete("{id}")]
     public async Task<IActionResult> DeleteTodoItem(long id)
     {
@@ -122,7 +114,6 @@ public class TodoItemsController : ControllerBase
             IsComplete = todoItem.IsComplete
         };
 
-    // копирование свойств с одинаковыми именами
     private static void CopyProperties(object source, object target)
     {
         var sourceProps = source.GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance);

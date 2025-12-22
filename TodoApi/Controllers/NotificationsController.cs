@@ -18,13 +18,11 @@ namespace TodoApi.Controllers
             _logger = logger;
         }
 
-        // POST: api/notifications
         [HttpPost]
         public async Task<ActionResult<SendMessageResult>> SendNotification(TelegramMessage message)
         {
             try
             {
-                // логируем все свойства входящего объекта
                 var messageType = message.GetType();
                 foreach (var prop in messageType.GetProperties())
                 {
@@ -32,11 +30,9 @@ namespace TodoApi.Controllers
                         prop.Name, prop.GetValue(message));
                 }
 
-                // получаем имя контроллера динамически
                 var controllerName = GetType().Name;
                 _logger.LogInformation("Controller {Controller} is processing message", controllerName);
 
-                // вызываем метод SendMessageAsync через MethodInfo.Invoke
                 MethodInfo? method = typeof(ITelegramService)
                     .GetMethod("SendMessageAsync");
 
@@ -54,7 +50,6 @@ namespace TodoApi.Controllers
                     new object[] { message.ChatId, message.Message }
                 );
 
-                // Приводим возвращаемый Task<SendMessageResult>
                 var task = (Task<SendMessageResult>)taskObject!;
                 var result = await task;
 
@@ -71,7 +66,6 @@ namespace TodoApi.Controllers
             }
         }
 
-        // GET: api/notifications/test
         [HttpGet("test")]
         public async Task<ActionResult> TestConnection()
         {
@@ -87,7 +81,6 @@ namespace TodoApi.Controllers
             }
         }
 
-        // POST: api/notifications/test-message
         [HttpPost("test-message")]
         public async Task<ActionResult<SendMessageResult>> SendTestMessage([FromQuery] long chatId)
         {

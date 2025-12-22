@@ -16,13 +16,13 @@ namespace TodoApi.Services
             _configuration = configuration;
             _logger = logger;
             
-            var botToken = _configuration["TelegramBot:Token"]; // инкапсуляция
+            var botToken = _configuration["TelegramBot:Token"];
             if (string.IsNullOrEmpty(botToken))
             {
                 throw new ArgumentException("Telegram bot token is not configured");
             }
             
-            _botClient = new TelegramBotClient(botToken); // инкапсуляция
+            _botClient = new TelegramBotClient(botToken);
         }
 
         public async Task<SendMessageResult> SendMessageAsync(long chatId, string message)

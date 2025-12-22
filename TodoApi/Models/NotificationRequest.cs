@@ -1,8 +1,8 @@
-// Models/NotificationRequest.cs
+
 public class NotificationRequest
 {
     public string Message { get; set; }
-    public string? PhotoUrl { get; set; } // Опционально: для отправки фото
+    public string? PhotoUrl { get; set; }
     public NotificationType Type { get; set; } = NotificationType.Text;
 }
 
@@ -13,7 +13,6 @@ public enum NotificationType
     Document
 }
 
-// Models/SendMessageResult.cs
 public class SendMessageResult
 {
     public bool Success { get; set; }
