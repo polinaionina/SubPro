@@ -13,10 +13,10 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("TodoApi")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+0c583ec60df64b621779e426cab99fb09bcf6c08")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+7414fa20b31393c4c6ad8ce984bd1a67a07949ad")]
 [assembly: System.Reflection.AssemblyProductAttribute("TodoApi")]
 [assembly: System.Reflection.AssemblyTitleAttribute("TodoApi")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
 
-// Создано классом WriteCodeFragment MSBuild.
+
 

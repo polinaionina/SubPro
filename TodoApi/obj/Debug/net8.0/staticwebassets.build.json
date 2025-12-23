@@ -1,11 +1,125 @@
 {
   "Version": 1,
-  "Hash": "3hjUVzjnzw2ta3oCSLqU8tAKfTZHtKzlZ6I9JPBGklk=",
+  "Hash": "zxOLDGe1Y53V1Hq5KFY+jsmRX68OuR/631LHYDr9C4o=",
   "Source": "TodoApi",
   "BasePath": "_content/TodoApi",
   "Mode": "Default",
   "ManifestType": "Build",
   "ReferencedProjectsConfiguration": [],
-  "DiscoveryPatterns": [],
-  "Assets": []
+  "DiscoveryPatterns": [
+    {
+      "Name": "TodoApi\\wwwroot",
+      "Source": "TodoApi",
+      "ContentRoot": "C:\\Users\\User\\Desktop\\bomb_project\\server\\wwwroot\\",
+      "BasePath": "_content/TodoApi",
+      "Pattern": "**"
+    }
+  ],
+  "Assets": [
+    {
+      "Identity": "C:\\Users\\User\\Desktop\\bomb_project\\server\\wwwroot\\telegram-login.html",
+      "SourceId": "TodoApi",
+      "SourceType": "Discovered",
+      "ContentRoot": "C:\\Users\\User\\Desktop\\bomb_project\\server\\wwwroot\\",
+      "BasePath": "_content/TodoApi",
+      "RelativePath": "telegram-login#[.{fingerprint}]?.html",
+      "AssetKind": "All",
+      "AssetMode": "All",
+      "AssetRole": "Primary",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
+      "RelatedAsset": "",
+      "AssetTraitName": "",
+      "AssetTraitValue": "",
+      "Fingerprint": "3zhyju0ofr",
+      "Integrity": "f7ovNwMIQz8XA3mvrTRe5O0ole45bExfthbsPtB5bKk=",
+      "CopyToOutputDirectory": "Never",
+      "CopyToPublishDirectory": "PreserveNewest",
+      "OriginalItemSpec": "wwwroot\\telegram-login.html"
+    }
+  ],
+  "Endpoints": [
+    {
+      "Route": "telegram-login.3zhyju0ofr.html",
+      "AssetFile": "C:\\Users\\User\\Desktop\\bomb_project\\server\\wwwroot\\telegram-login.html",
+      "Selectors": [],
+      "ResponseHeaders": [
+        {
+          "Name": "Accept-Ranges",
+          "Value": "bytes"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "17233"
+        },
+        {
+          "Name": "Content-Type",
+          "Value": "text/html"
+        },
+        {
+          "Name": "ETag",
+          "Value": "\"f7ovNwMIQz8XA3mvrTRe5O0ole45bExfthbsPtB5bKk=\""
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "Tue, 23 Dec 2025 09:34:10 GMT"
+        },
+        {
+          "Name": "Cache-Control",
+          "Value": "max-age=31536000, immutable"
+        }
+      ],
+      "EndpointProperties": [
+        {
+          "Name": "fingerprint",
+          "Value": "3zhyju0ofr"
+        },
+        {
+          "Name": "label",
+          "Value": "telegram-login.html"
+        },
+        {
+          "Name": "integrity",
+          "Value": "sha256-f7ovNwMIQz8XA3mvrTRe5O0ole45bExfthbsPtB5bKk="
+        }
+      ]
+    },
+    {
+      "Route": "telegram-login.html",
+      "AssetFile": "C:\\Users\\User\\Desktop\\bomb_project\\server\\wwwroot\\telegram-login.html",
+      "Selectors": [],
+      "ResponseHeaders": [
+        {
+          "Name": "Accept-Ranges",
+          "Value": "bytes"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "17233"
+        },
+        {
+          "Name": "Content-Type",
+          "Value": "text/html"
+        },
+        {
+          "Name": "ETag",
+          "Value": "\"f7ovNwMIQz8XA3mvrTRe5O0ole45bExfthbsPtB5bKk=\""
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "Tue, 23 Dec 2025 09:34:10 GMT"
+        },
+        {
+          "Name": "Cache-Control",
+          "Value": "no-cache"
+        }
+      ],
+      "EndpointProperties": [
+        {
+          "Name": "integrity",
+          "Value": "sha256-f7ovNwMIQz8XA3mvrTRe5O0ole45bExfthbsPtB5bKk="
+        }
+      ]
+    }
+  ]
 }
