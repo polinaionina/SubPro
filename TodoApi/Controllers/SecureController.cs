@@ -1,4 +1,4 @@
-using Microsoft.AspNetCore.Authorization;
+/*using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace TodoApi.Controllers
@@ -15,4 +15,4 @@ namespace TodoApi.Controllers
             return Ok(new { telegram_id = userId });
         }
     }
-}
+}*/

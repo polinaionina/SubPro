@@ -26,7 +26,6 @@ namespace TodoApi.Services
                 throw new ArgumentException("Telegram bot token is not configured");
 
             _botClient = new TelegramBotClient(botToken);
-            ///_botClient = botClient;
         }
 
         public async Task<SendMessageResult> SendMessageAsync(long chatId, string message)
@@ -71,6 +70,7 @@ namespace TodoApi.Services
 
         public bool ValidateTelegramLogin(TelegramAuthRequest request)
         {
+            // TODO: добавить проверку подписи Telegram
             return true;
         }
 

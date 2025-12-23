@@ -8,7 +8,9 @@ using TodoApi.Data;
 using TodoApi.Middleware; 
 using Microsoft.OpenApi.Models;
 using Telegram.Bot;
-
+using TodoApi.Application.Handlers;
+using TodoApi.Application.Handlers.CreateSubscription;
+using TodoApi.Application.Handlers.GetMySubscriptions;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -22,13 +24,19 @@ builder.Services.AddSingleton<ITelegramBotClient>(sp =>
 
 builder.Services.AddSingleton<TelegramUpdateHandler>();
 
-
-
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseMySql(
         builder.Configuration.GetConnectionString("DefaultConnection"),
         new MySqlServerVersion(new Version(8, 0, 33))
     ));
+
+builder.Services.AddScoped<
+    IHandler<(long, CreateSubscriptionDto), CreateSubscriptionResult>,
+    CreateSubscriptionHandler>();
+builder.Services.AddScoped<
+    IHandler<long, GetMySubscriptionsResult>,
+    GetMySubscriptionsHandler>();
+
 
 var jwtSettings = builder.Configuration.GetSection("Jwt");
 var jwtKey = jwtSettings["Key"];
@@ -37,6 +45,7 @@ if (string.IsNullOrEmpty(jwtKey))
     throw new ArgumentException("JWT Key is not configured in appsettings.json");
 }
 var key = Encoding.UTF8.GetBytes(jwtKey);
+
 
 builder.Services.AddAuthentication(options =>
 {
@@ -63,7 +72,6 @@ builder.Services.AddAuthorization();
 builder.WebHost.UseUrls("http://localhost:5052");
 
 builder.Services.AddScoped<UserService>();
-
 
 builder.Services
     .AddControllers()
@@ -120,7 +128,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI(c =>
     {
         c.SwaggerEndpoint("/swagger/v1/swagger.json", "TodoAPI V1");
-        c.RoutePrefix = "swagger";
+        c.RoutePrefix = "swagger"; 
     });
 }
 

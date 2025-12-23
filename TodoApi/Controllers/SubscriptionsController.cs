@@ -3,6 +3,10 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using TodoApi.Data;
 using TodoApi.Models;
+using TodoApi.Application.Handlers;
+using TodoApi.Application.Handlers.CreateSubscription;
+using TodoApi.Application.Handlers.GetMySubscriptions;
+
 
 namespace TodoApi.Controllers
 {
@@ -18,61 +22,42 @@ namespace TodoApi.Controllers
             _context = context;
         }
 
+        [Authorize]
         [HttpPost]
-        public async Task<IActionResult> Create([FromBody] CreateSubscriptionDto dto)
+        public async Task<IActionResult> Create(
+            [FromBody] CreateSubscriptionDto dto,
+            [FromServices]
+            IHandler<(long, CreateSubscriptionDto), CreateSubscriptionResult> handler)
         {
-            var telegramIdStr = User.FindFirst("telegram_id")?.Value;
-            if (telegramIdStr == null)
-                return Unauthorized("telegram_id not found in token");
+            var telegramId = long.Parse(
+                User.FindFirst("telegram_id")!.Value);
 
-            if (!long.TryParse(telegramIdStr, out var telegramId))
-                return Unauthorized("Invalid telegram_id");
+            var result = await handler.Handle((telegramId, dto));
 
-            var user = await _context.Users
-                .FirstOrDefaultAsync(u => u.TelegramId == telegramId);
+            if (!result.Success)
+                return BadRequest(result.Error);
 
-            if (user == null)
-                return NotFound("User not found");
-
-            var subscription = new Subscription
-            {
-                UserId = user.Id,
-                Name = dto.Name,
-                Price = dto.Price,
-                Period = dto.Period,
-
-                NextPaymentDate = dto.NextPaymentDate,
-
-                NotificationDaysBefore = dto.NotificationDaysBefore,
-                IsActive = true,
-                CreatedAt = DateTime.UtcNow
-            };
-
-
-            _context.Subscriptions.Add(subscription);
-            await _context.SaveChangesAsync();
-
-            return Ok(subscription);
+            return Ok();
         }
 
+
+        [Authorize]
         [HttpGet]
-        public async Task<IActionResult> GetMy()
+        public async Task<IActionResult> GetMy(
+            [FromServices]
+            IHandler<long, GetMySubscriptionsResult> handler)
         {
             var telegramIdStr = User.FindFirst("telegram_id")?.Value;
             if (!long.TryParse(telegramIdStr, out var telegramId))
                 return Unauthorized();
 
-            var user = await _context.Users
-                .FirstOrDefaultAsync(u => u.TelegramId == telegramId);
+            var result = await handler.Handle(telegramId);
 
-            if (user == null)
-                return NotFound();
+            if (!result.Success)
+                return NotFound(result.Error);
 
-            var subs = await _context.Subscriptions
-                .Where(s => s.UserId == user.Id)
-                .ToListAsync();
-
-            return Ok(subs);
+            return Ok(result.Subscriptions);
         }
+
     }
 }

@@ -68,6 +68,7 @@ namespace TodoApi.Controllers
 
                 _nonceStorage.Remove(nonce);
 
+
                 var user = await _userService.GetOrCreateUserAsync(new TelegramAuthRequest
                 {
                     Id = long.Parse(id),
@@ -97,5 +98,6 @@ namespace TodoApi.Controllers
                 return BadRequest("Telegram auth failed");
             }
         }
+
     }
 }

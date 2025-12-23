@@ -1,6 +1,6 @@
 {
   "Version": 1,
-  "Hash": "zxOLDGe1Y53V1Hq5KFY+jsmRX68OuR/631LHYDr9C4o=",
+  "Hash": "VNghL4HoIHvlO/20z1D0aXmaMrj//P1ZxV/z4AGAY7M=",
   "Source": "TodoApi",
   "BasePath": "_content/TodoApi",
   "Mode": "Default",
@@ -31,8 +31,8 @@
       "RelatedAsset": "",
       "AssetTraitName": "",
       "AssetTraitValue": "",
-      "Fingerprint": "3zhyju0ofr",
-      "Integrity": "f7ovNwMIQz8XA3mvrTRe5O0ole45bExfthbsPtB5bKk=",
+      "Fingerprint": "3meu2gu85r",
+      "Integrity": "ewf6bFbrVDMfBHDM3OaBxEwPD/I2YqPyI0xBAIimd5E=",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
       "OriginalItemSpec": "wwwroot\\telegram-login.html"
@@ -40,7 +40,7 @@
   ],
   "Endpoints": [
     {
-      "Route": "telegram-login.3zhyju0ofr.html",
+      "Route": "telegram-login.3meu2gu85r.html",
       "AssetFile": "C:\\Users\\User\\Desktop\\bomb_project\\server\\wwwroot\\telegram-login.html",
       "Selectors": [],
       "ResponseHeaders": [
@@ -50,7 +50,7 @@
         },
         {
           "Name": "Content-Length",
-          "Value": "17233"
+          "Value": "3334"
         },
         {
           "Name": "Content-Type",
@@ -58,11 +58,11 @@
         },
         {
           "Name": "ETag",
-          "Value": "\"f7ovNwMIQz8XA3mvrTRe5O0ole45bExfthbsPtB5bKk=\""
+          "Value": "\"ewf6bFbrVDMfBHDM3OaBxEwPD/I2YqPyI0xBAIimd5E=\""
         },
         {
           "Name": "Last-Modified",
-          "Value": "Tue, 23 Dec 2025 09:34:10 GMT"
+          "Value": "Tue, 23 Dec 2025 16:51:44 GMT"
         },
         {
           "Name": "Cache-Control",
@@ -72,7 +72,7 @@
       "EndpointProperties": [
         {
           "Name": "fingerprint",
-          "Value": "3zhyju0ofr"
+          "Value": "3meu2gu85r"
         },
         {
           "Name": "label",
@@ -80,7 +80,7 @@
         },
         {
           "Name": "integrity",
-          "Value": "sha256-f7ovNwMIQz8XA3mvrTRe5O0ole45bExfthbsPtB5bKk="
+          "Value": "sha256-ewf6bFbrVDMfBHDM3OaBxEwPD/I2YqPyI0xBAIimd5E="
         }
       ]
     },
@@ -95,7 +95,7 @@
         },
         {
           "Name": "Content-Length",
-          "Value": "17233"
+          "Value": "3334"
         },
         {
           "Name": "Content-Type",
@@ -103,11 +103,11 @@
         },
         {
           "Name": "ETag",
-          "Value": "\"f7ovNwMIQz8XA3mvrTRe5O0ole45bExfthbsPtB5bKk=\""
+          "Value": "\"ewf6bFbrVDMfBHDM3OaBxEwPD/I2YqPyI0xBAIimd5E=\""
         },
         {
           "Name": "Last-Modified",
-          "Value": "Tue, 23 Dec 2025 09:34:10 GMT"
+          "Value": "Tue, 23 Dec 2025 16:51:44 GMT"
         },
         {
           "Name": "Cache-Control",
@@ -117,7 +117,7 @@
       "EndpointProperties": [
         {
           "Name": "integrity",
-          "Value": "sha256-f7ovNwMIQz8XA3mvrTRe5O0ole45bExfthbsPtB5bKk="
+          "Value": "sha256-ewf6bFbrVDMfBHDM3OaBxEwPD/I2YqPyI0xBAIimd5E="
         }
       ]
     }

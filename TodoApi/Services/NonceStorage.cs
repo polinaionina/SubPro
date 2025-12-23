@@ -10,7 +10,6 @@ namespace TodoApi.Services
         public void Add(string nonce, string deviceId)
         {
             _nonces[nonce] = (deviceId, DateTime.UtcNow);
-            
             CleanupExpired();
         }
 

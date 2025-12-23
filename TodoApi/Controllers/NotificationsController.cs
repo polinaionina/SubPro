@@ -63,8 +63,8 @@ namespace TodoApi.Controllers
             }
         }
 
-        [HttpGet("test")]
-        [AllowAnonymous]
+        /*[HttpGet("test")]
+        [AllowAnonymous] 
         public async Task<ActionResult> TestConnection()
         {
             var isConnected = await _telegramService.TestConnectionAsync();
@@ -97,6 +97,6 @@ namespace TodoApi.Controllers
             {
                 return BadRequest(result);
             }
-        }
+        }*/
     }
 }

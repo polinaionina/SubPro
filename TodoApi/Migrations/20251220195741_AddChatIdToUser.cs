@@ -4,8 +4,10 @@
 
 namespace TodoApi.Migrations
 {
+    /// <inheritdoc />
     public partial class AddChatIdToUser : Migration
     {
+        /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.AddColumn<long>(
@@ -15,6 +17,7 @@ namespace TodoApi.Migrations
                 nullable: true);
         }
 
+        /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropColumn(
