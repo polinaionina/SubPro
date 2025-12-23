@@ -4,6 +4,7 @@ using TodoApi.Models;
 using TodoApi.Services;
 using System.Reflection;
 using Microsoft.Extensions.Logging;
+using TodoApi.Dtos;
 
 namespace TodoApi.Controllers
 {
@@ -62,41 +63,5 @@ namespace TodoApi.Controllers
                 });
             }
         }
-
-        /*[HttpGet("test")]
-        [AllowAnonymous] 
-        public async Task<ActionResult> TestConnection()
-        {
-            var isConnected = await _telegramService.TestConnectionAsync();
-            
-            if (isConnected)
-            {
-                return Ok(new { message = "Bot connection successful" });
-            }
-            else
-            {
-                return BadRequest(new { message = "Bot connection failed" });
-            }
-        }
-
-        [HttpPost("test-message")]
-        [AllowAnonymous]
-        public async Task<ActionResult<SendMessageResult>> SendTestMessage([FromQuery] long chatId)
-        {
-            var testMessage = $"✅ Test notification from TodoAPI!\n" +
-                            $"🕒 Time: {DateTime.UtcNow:yyyy-MM-dd HH:mm:ss} UTC\n" +
-                            $"🔧 API: TodoApi";
-
-            var result = await _telegramService.SendMessageAsync(chatId, testMessage);
-            
-            if (result.Success)
-            {
-                return Ok(result);
-            }
-            else
-            {
-                return BadRequest(result);
-            }
-        }*/
     }
 }

@@ -1,4 +1,4 @@
-namespace TodoApi.Models
+namespace TodoApi.Dtos
 {
     public class StartAuthRequest
     {

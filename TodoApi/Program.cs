@@ -11,6 +11,10 @@ using Telegram.Bot;
 using TodoApi.Application.Handlers;
 using TodoApi.Application.Handlers.CreateSubscription;
 using TodoApi.Application.Handlers.GetMySubscriptions;
+using TodoApi.Dtos;
+
+
+
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -23,6 +27,8 @@ builder.Services.AddSingleton<ITelegramBotClient>(sp =>
 });
 
 builder.Services.AddSingleton<TelegramUpdateHandler>();
+
+
 
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseMySql(
@@ -72,6 +78,7 @@ builder.Services.AddAuthorization();
 builder.WebHost.UseUrls("http://localhost:5052");
 
 builder.Services.AddScoped<UserService>();
+
 
 builder.Services
     .AddControllers()

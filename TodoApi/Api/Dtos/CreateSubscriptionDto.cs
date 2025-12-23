@@ -1,5 +1,6 @@
 using TodoApi.Models;
-
+namespace TodoApi.Dtos
+{
 
 public class CreateSubscriptionDto
 {
@@ -9,4 +10,5 @@ public class CreateSubscriptionDto
 
     public DateTime NextPaymentDate { get; set; }
     public int NotificationDaysBefore { get; set; } = 3;
+}
 }

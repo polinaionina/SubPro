@@ -1,5 +1,6 @@
 using TodoApi.Models;
 using UserModel = TodoApi.Models.User;
+using TodoApi.Dtos;
 
 namespace TodoApi.Services
 {

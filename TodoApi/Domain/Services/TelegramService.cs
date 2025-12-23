@@ -7,6 +7,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using Microsoft.IdentityModel.Tokens;
 using UserModel = TodoApi.Models.User;
+using TodoApi.Dtos;
 
 namespace TodoApi.Services
 {
