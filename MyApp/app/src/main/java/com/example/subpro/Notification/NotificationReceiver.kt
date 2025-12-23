@@ -1,5 +1,5 @@
 
-package com.example.subpro.util
+package com.example.subpro.Notification
 
 import android.Manifest
 import android.R

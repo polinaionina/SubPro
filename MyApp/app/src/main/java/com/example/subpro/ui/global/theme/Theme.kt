@@ -1,6 +1,5 @@
-package com.example.subpro.ui.theme
+package com.example.subpro.ui.global.theme
 
-import android.app.Activity
 import android.os.Build
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme

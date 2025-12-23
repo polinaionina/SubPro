@@ -1,4 +1,4 @@
-package com.example.subpro.ui.theme
+package com.example.subpro.ui.global.screen
 
 import android.Manifest
 import android.app.DatePickerDialog
@@ -25,7 +25,7 @@ import androidx.core.content.ContextCompat
 import com.example.subpro.R
 import com.example.subpro.data.SubscriptionService
 import com.example.subpro.model.SubscriptionPeriod
-import com.example.subpro.util.NotificationScheduler
+import com.example.subpro.Notification.NotificationScheduler
 import java.time.LocalDate
 
 fun getAvailableNotificationDays(period: SubscriptionPeriod): List<Int> =

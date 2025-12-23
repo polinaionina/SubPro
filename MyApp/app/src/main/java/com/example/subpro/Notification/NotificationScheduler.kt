@@ -1,4 +1,4 @@
-package com.example.subpro.util
+package com.example.subpro.Notification
 
 import android.Manifest
 import android.app.AlarmManager
@@ -9,7 +9,6 @@ import android.os.Build
 import androidx.annotation.RequiresPermission
 import com.example.subpro.model.Subscription
 import com.example.subpro.model.nextPayment
-import java.time.Instant
 import java.time.ZoneId
 
 object NotificationScheduler {

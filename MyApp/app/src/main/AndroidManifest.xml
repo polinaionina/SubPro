@@ -37,7 +37,7 @@
         </activity>
 
         <!-- Регистрация BroadcastReceiver (предполагаем, что он в util) -->
-        <receiver android:name=".util.NotificationReceiver" android:enabled="true"/>
+        <receiver android:name=".Notification.NotificationReceiver" android:enabled="true"/>
 
     </application>
 
