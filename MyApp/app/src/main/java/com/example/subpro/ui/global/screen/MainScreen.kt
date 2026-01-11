@@ -68,29 +68,6 @@ fun MainScreen(
                 textAlign = TextAlign.Start
             )
         }
-        Button(
-            onClick = {
-                notificationHelper.requestPermissionAndSend(
-                    title = "Тестовое уведомление",
-                    text = "<3 <3 <3>"
-                )
-            },
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(50.dp)
-                .padding(vertical = 4.dp),
-            shape = RoundedCornerShape(12.dp),
-            colors = ButtonDefaults.buttonColors(
-                containerColor = Color(0xFF4CAF50),
-                contentColor = Color.White
-            )
-        ) {
-            Text(
-                "Отправить тестовое уведомление",
-                fontSize = 16.sp,
-                fontWeight = FontWeight.Medium
-            )
-        }
 
         Spacer(Modifier.height(15.dp))
 

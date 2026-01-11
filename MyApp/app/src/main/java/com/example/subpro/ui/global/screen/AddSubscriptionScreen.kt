@@ -274,8 +274,12 @@ fun AddSubscriptionScreen(
                 ) {
                     Text("Дата списания", color = Color(0xFF213E60))
                     Spacer(Modifier.height(2.dp))
+                    var month = "${date.monthValue}"
+                    if (date.monthValue < 10) {
+                        month = "0${date.monthValue}"
+                    }
                     Text(
-                        "$date",
+                        "${date.dayOfMonth}-${month}-${date.year}",
                         color = Color(0xFF213E60),
                         fontSize = 20.sp,
                         fontWeight = FontWeight.Medium

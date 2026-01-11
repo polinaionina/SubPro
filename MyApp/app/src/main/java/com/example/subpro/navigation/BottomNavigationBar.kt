@@ -18,7 +18,7 @@ fun BottomNavigationBar(
 ) {
     NavigationBar(containerColor = Color(0xFFF4F2EF)) {
         val items = listOf(
-            Triple(Screen.Main, "Главная", R.drawable.menu),
+            Triple(Screen.Main, "Главная", R.drawable.home),
             Triple(Screen.Calendar, "Календарь", R.drawable.today),
             Triple(Screen.Add, "Добавить", R.drawable.dobavit)
         )

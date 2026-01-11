@@ -21,7 +21,7 @@ fun CalendarMonthView(
     onDateSelected: (LocalDate?) -> Unit
 ) {
     val days = remember(month) { generateDaysForMonth(month) }
-
+    val today = remember { LocalDate.now() }
     val paymentDates: List<LocalDate> = remember(subscriptions) {
         subscriptions.map { it.nextPayment() }
     }
@@ -54,9 +54,13 @@ fun CalendarMonthView(
                 ) {
                     if (date != null) {
                         val isPaymentDay = paymentDates.contains(date)
+                        val isToday = date == today
 
                         Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                            Text(date.dayOfMonth.toString(), color = Color(0xFF213E60))
+                            Text(
+                                text = date.dayOfMonth.toString(),
+                                color = if (isToday) Color(0xFFE68C3A) else Color(0xFF213E60)
+                            )
 
                             if (isPaymentDay) {
                                 Canvas(modifier = Modifier.size(6.dp)) {
