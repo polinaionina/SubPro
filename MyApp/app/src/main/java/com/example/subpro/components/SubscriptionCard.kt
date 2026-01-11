@@ -21,7 +21,9 @@ fun SubscriptionCard(
     onClick: () -> Unit
 ) {
     val nextPayment = subscription.nextPayment()
-
+    var month = "${nextPayment.monthValue}"
+    if (nextPayment.monthValue < 10)
+        month = "0${nextPayment.monthValue}"
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -46,7 +48,7 @@ fun SubscriptionCard(
                     color = Color(0xFF213E60)
                 )
                 Text(
-                    text = "Следующий платёж: ${nextPayment.dayOfMonth}. ${nextPayment.monthValue}. ${nextPayment.year}",
+                    text = "Следующий платёж: ${nextPayment.dayOfMonth}.${month}.${nextPayment.year}",
                     fontSize = 12.sp,
                     color = Color(0xFF213E60).copy(alpha = 0.6f)
                 )
