@@ -1,0 +1,88 @@
+{
+  "Version": 1,
+  "ManifestType": "Publish",
+  "Endpoints": [
+    {
+      "Route": "telegram-login.3meu2gu85r.html",
+      "AssetFile": "telegram-login.html",
+      "Selectors": [],
+      "ResponseHeaders": [
+        {
+          "Name": "Accept-Ranges",
+          "Value": "bytes"
+        },
+        {
+          "Name": "Cache-Control",
+          "Value": "max-age=31536000, immutable"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "3334"
+        },
+        {
+          "Name": "Content-Type",
+          "Value": "text/html"
+        },
+        {
+          "Name": "ETag",
+          "Value": "\"ewf6bFbrVDMfBHDM3OaBxEwPD/I2YqPyI0xBAIimd5E=\""
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "Tue, 23 Dec 2025 18:05:53 GMT"
+        }
+      ],
+      "EndpointProperties": [
+        {
+          "Name": "fingerprint",
+          "Value": "3meu2gu85r"
+        },
+        {
+          "Name": "integrity",
+          "Value": "sha256-ewf6bFbrVDMfBHDM3OaBxEwPD/I2YqPyI0xBAIimd5E="
+        },
+        {
+          "Name": "label",
+          "Value": "telegram-login.html"
+        }
+      ]
+    },
+    {
+      "Route": "telegram-login.html",
+      "AssetFile": "telegram-login.html",
+      "Selectors": [],
+      "ResponseHeaders": [
+        {
+          "Name": "Accept-Ranges",
+          "Value": "bytes"
+        },
+        {
+          "Name": "Cache-Control",
+          "Value": "no-cache"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "3334"
+        },
+        {
+          "Name": "Content-Type",
+          "Value": "text/html"
+        },
+        {
+          "Name": "ETag",
+          "Value": "\"ewf6bFbrVDMfBHDM3OaBxEwPD/I2YqPyI0xBAIimd5E=\""
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "Tue, 23 Dec 2025 18:05:53 GMT"
+        }
+      ],
+      "EndpointProperties": [
+        {
+          "Name": "integrity",
+          "Value": "sha256-ewf6bFbrVDMfBHDM3OaBxEwPD/I2YqPyI0xBAIimd5E="
+        }
+      ]
+    }
+  ]
+}

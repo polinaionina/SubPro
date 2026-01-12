@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Telegram Auth</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f5f5f5;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 500px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+
+        .status {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 5px;
+        }
+
+        .success {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>🔐 Вход через Telegram</h2>
+
+    <div id="tg-login"></div>
+    <div id="status"></div>
+</div>
+
+<script>
+    const API_URL = "https://droopingly-troughlike-dedra.ngrok-free.dev";
+    const params = new URLSearchParams(window.location.search);
+    const nonce = params.get("nonce");
+
+    // 1️⃣ Проверяем, вернулись ли мы с JWT после редиректа
+    function checkRedirect() {
+        const token = params.get("token");
+        const telegramId = params.get("telegramId");
+        const success = params.get("success");
+        const error = params.get("error");
+
+        if (success && token && telegramId) {
+            localStorage.setItem("jwt_token", token);
+            localStorage.setItem("telegram_id", telegramId);
+
+            showStatus("✅ Авторизация успешна. Токен сохранён.", "success");
+
+            // очищаем URL
+            window.history.replaceState({}, document.title, window.location.pathname);
+        }
+
+        if (error) {
+            showStatus("❌ Ошибка авторизации: " + error, "error");
+            window.history.replaceState({}, document.title, window.location.pathname);
+        }
+    }
+
+    // 2️⃣ Инициализация Telegram Widget
+    function initTelegramWidget() {
+        const script = document.createElement("script");
+        script.src = "https://telegram.org/js/telegram-widget.js?22";
+        script.async = true;
+
+        script.setAttribute("data-telegram-login", "subapro_bot");
+        script.setAttribute("data-size", "large");
+        script.setAttribute("data-request-access", "write");
+        script.setAttribute("data-userpic", "true");
+
+        let authUrl = API_URL + "/api/auth/telegram-callback";
+        if (nonce) {
+            authUrl += "?nonce=" + nonce;
+        }
+
+        script.setAttribute("data-auth-url", authUrl);
+
+        document.getElementById("tg-login").appendChild(script);
+    }
+
+    function showStatus(text, type) {
+        document.getElementById("status").innerHTML =
+            `<div class="status ${type}">${text}</div>`;
+    }
+
+    document.addEventListener("DOMContentLoaded", () => {
+        checkRedirect();
+        initTelegramWidget();
+    });
+</script>
+
+</body>
+</html>

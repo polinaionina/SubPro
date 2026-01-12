@@ -1,6 +1,7 @@
+cd ~/SubPro/TodoApi/Api/Controllers
+
+cat > AuthController.cs <<'EOF'
 using Microsoft.AspNetCore.Mvc;
-using System.Security.Cryptography;
-using System.Text;
 using TodoApi.Models;
 using TodoApi.Services;
 using Microsoft.Extensions.Logging;
@@ -64,17 +65,21 @@ namespace TodoApi.Controllers
                 _logger.LogInformation("Telegram callback for user {Id}", id);
 
                 var nonce = Request.Query["nonce"].FirstOrDefault();
-                if (nonce == null || !_nonceStorage.TryGet(nonce, out _))
+                if (nonce == null || !_nonceStorage.TryGet(nonce, out var deviceId))
                     return BadRequest("Invalid nonce");
 
                 _nonceStorage.Remove(nonce);
-
 
                 var user = await _userService.GetOrCreateUserAsync(new TelegramAuthRequest
                 {
                     Id = long.Parse(id),
                     FirstName = first_name,
-                    Username = username
+                    LastName = Request.Query["last_name"].FirstOrDefault(),
+                    Username = username,
+                    PhotoUrl = Request.Query["photo_url"].FirstOrDefault(),
+                    AuthDate = long.Parse(auth_date),
+                    Hash = hash,
+                    DeviceId = deviceId!
                 });
 
                 var jwt = _telegramService.GenerateJwt(user);
@@ -85,13 +90,15 @@ namespace TodoApi.Controllers
                     $"&telegramId={user.TelegramId}" +
                     $"&success=true";
 
-                await _telegramService.SendMessageAsync(
-                    user.ChatId.Value,
-                    "✅ Авторизация прошла успешно! Я буду присылать уведомления 🔔"
-                );
+                if (user.ChatId.HasValue)
+                {
+                    await _telegramService.SendMessageAsync(
+                        user.ChatId.Value,
+                        "✅ Авторизация прошла успешно! Я буду присылать уведомления 🔔"
+                    );
+                }
 
-                return Redirect(deepLink);          
-
+                return Redirect(deepLink);
             }
             catch (Exception ex)
             {
@@ -99,6 +106,6 @@ namespace TodoApi.Controllers
                 return BadRequest("Telegram auth failed");
             }
         }
-
     }
 }
+EOF

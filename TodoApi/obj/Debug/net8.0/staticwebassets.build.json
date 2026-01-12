@@ -1,6 +1,6 @@
 {
   "Version": 1,
-  "Hash": "VNghL4HoIHvlO/20z1D0aXmaMrj//P1ZxV/z4AGAY7M=",
+  "Hash": "rlXX8tORm1+XQari+fmJHP9s2A0Yn6wUTPHIj/R23u8=",
   "Source": "TodoApi",
   "BasePath": "_content/TodoApi",
   "Mode": "Default",
@@ -10,17 +10,17 @@
     {
       "Name": "TodoApi\\wwwroot",
       "Source": "TodoApi",
-      "ContentRoot": "C:\\Users\\User\\Desktop\\bomb_project\\server\\wwwroot\\",
+      "ContentRoot": "C:\\teamProject\\SubPro\\TodoApi\\wwwroot\\",
       "BasePath": "_content/TodoApi",
       "Pattern": "**"
     }
   ],
   "Assets": [
     {
-      "Identity": "C:\\Users\\User\\Desktop\\bomb_project\\server\\wwwroot\\telegram-login.html",
+      "Identity": "C:\\teamProject\\SubPro\\TodoApi\\wwwroot\\telegram-login.html",
       "SourceId": "TodoApi",
       "SourceType": "Discovered",
-      "ContentRoot": "C:\\Users\\User\\Desktop\\bomb_project\\server\\wwwroot\\",
+      "ContentRoot": "C:\\teamProject\\SubPro\\TodoApi\\wwwroot\\",
       "BasePath": "_content/TodoApi",
       "RelativePath": "telegram-login#[.{fingerprint}]?.html",
       "AssetKind": "All",
@@ -41,7 +41,7 @@
   "Endpoints": [
     {
       "Route": "telegram-login.3meu2gu85r.html",
-      "AssetFile": "C:\\Users\\User\\Desktop\\bomb_project\\server\\wwwroot\\telegram-login.html",
+      "AssetFile": "C:\\teamProject\\SubPro\\TodoApi\\wwwroot\\telegram-login.html",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -62,7 +62,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Tue, 23 Dec 2025 16:51:44 GMT"
+          "Value": "Tue, 23 Dec 2025 18:05:53 GMT"
         },
         {
           "Name": "Cache-Control",
@@ -86,7 +86,7 @@
     },
     {
       "Route": "telegram-login.html",
-      "AssetFile": "C:\\Users\\User\\Desktop\\bomb_project\\server\\wwwroot\\telegram-login.html",
+      "AssetFile": "C:\\teamProject\\SubPro\\TodoApi\\wwwroot\\telegram-login.html",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -107,7 +107,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Tue, 23 Dec 2025 16:51:44 GMT"
+          "Value": "Tue, 23 Dec 2025 18:05:53 GMT"
         },
         {
           "Name": "Cache-Control",
