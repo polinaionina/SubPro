@@ -23,10 +23,12 @@ fun SubscriptionDetails(selectedDate: LocalDate?, subscriptions: List<Subscripti
     }
 
     val dailySubscriptions = subscriptions.filter { it.nextPayment() == selectedDate }
-
+    var text = "На ${selectedDate.dayOfMonth}.${selectedDate.monthValue} нет платежей."
+    if (selectedDate.monthValue < 10)
+        text = "На ${selectedDate.dayOfMonth}.0${selectedDate.monthValue} нет платежей."
     if (dailySubscriptions.isEmpty()) {
         Text(
-            "На ${selectedDate.dayOfMonth}.${selectedDate.monthValue} нет платежей.",
+            text,
             style = MaterialTheme.typography.titleMedium,
             color = Color.Gray
         )

@@ -52,7 +52,7 @@ fun MainScreen(
             onClick = onGoToTelegramAuth,
             modifier = Modifier
                 .fillMaxWidth()
-                .height(73.dp)
+                .height(80.dp)
                 .padding(vertical = 4.dp),
             shape = RoundedCornerShape(15.dp),
             colors = ButtonDefaults.buttonColors(

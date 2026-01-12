@@ -53,7 +53,7 @@ fun getDayText(days: Int, includePrefix: Boolean = false): String {
     }
 }
 
-enum class Currency(val label: String) { RUB("RUB"), USD("USD") }
+enum class Currency(val label: String) { RUB("RUB") }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -159,13 +159,13 @@ fun AddSubscriptionScreen(
                 contentDescription = "на главную",
                 modifier = Modifier
                     .align(Alignment.CenterStart)
-                    .size(48.dp)
+                    .size(40.dp)
                     .clickable { onBack() },
                 tint = Color.Unspecified
             )
             Text(
                 if (isEdit) "Редактировать подписку" else "Новая подписка",
-                fontSize = 24.sp,
+                fontSize = 20.sp,
                 fontWeight = FontWeight.Medium,
                 modifier = Modifier
                     .align(Alignment.Center)
@@ -182,7 +182,7 @@ fun AddSubscriptionScreen(
             onValueChange = { name = it },
             label = {
                 Text(
-                    "Название подписки",
+                    "Название подписки:",
                     color = Color(0xFF223F61)
                 )
             },
@@ -212,17 +212,12 @@ fun AddSubscriptionScreen(
             modifier = Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            CurrencyDropdownMenu(
-                selected = currency,
-                onSelected = { currency = it }
-            )
-            Spacer(Modifier.width(13.dp))
             TextField(
                 value = price,
                 onValueChange = { price = it },
-                label = { Text("Цена") },
+                label = { Text("Цена:") },
                 modifier = Modifier
-                    .fillMaxWidth()
+                    .width(268.dp)
                     .height(65.dp),
                 shape = RoundedCornerShape(15.dp),
                 textStyle = TextStyle(
@@ -241,6 +236,19 @@ fun AddSubscriptionScreen(
                     unfocusedLabelColor = Color(0xFF223F61)
                 )
             )
+            Box(
+                modifier = Modifier
+                    .height(65.dp)
+                    .padding(start = 8.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = currency.label,
+                    fontSize = 20.sp,
+                    fontWeight = FontWeight.Medium,
+                    color = Color(0xFF223F61)
+                )
+            }
         }
 
         Spacer(Modifier.height(46.dp))
@@ -272,8 +280,10 @@ fun AddSubscriptionScreen(
                 Column(
                     modifier = Modifier.fillMaxSize()
                 ) {
-                    Text("Дата списания", color = Color(0xFF213E60))
-                    Spacer(Modifier.height(2.dp))
+                    Text("Дата списания:",
+                        color = Color(0xFF213E60),
+                        fontSize = 12.sp)
+                    Spacer(Modifier.height(0.3.dp))
                     var month = "${date.monthValue}"
                     if (date.monthValue < 10) {
                         month = "0${date.monthValue}"
@@ -281,7 +291,7 @@ fun AddSubscriptionScreen(
                     Text(
                         "${date.dayOfMonth}-${month}-${date.year}",
                         color = Color(0xFF213E60),
-                        fontSize = 20.sp,
+                        fontSize = 16.sp,
                         fontWeight = FontWeight.Medium
                     )
                 }
@@ -474,12 +484,13 @@ fun NotificationDaysDropdown(
             Column(
                 modifier = Modifier.fillMaxSize()
             ) {
-                Text("Напомнить", color = Color(0xFF213E60))
-                Spacer(Modifier.height(2.dp))
+                Text("Напомнить:",
+                    color = Color(0xFF213E60),
+                    fontSize = 12.sp)
                 Text(
                     selectedText,
                     color = Color(0xFF213E60),
-                    fontSize = 20.sp,
+                    fontSize = 16.sp,
                     fontWeight = FontWeight.Medium
                 )
             }
@@ -526,12 +537,13 @@ fun PeriodDropdownMenu(
             Column(
                 modifier = Modifier.fillMaxSize()
             ) {
-                Text("Тип подписки", color = Color(0xFF213E60))
-                Spacer(Modifier.height(2.dp))
+                Text("Тип подписки:",
+                    color = Color(0xFF213E60),
+                    fontSize = 12.sp)
                 Text(
                     selected.asRussianText(),
                     color = Color(0xFF213E60),
-                    fontSize = 20.sp,
+                    fontSize = 14.sp,
                     fontWeight = FontWeight.Medium
                 )
             }

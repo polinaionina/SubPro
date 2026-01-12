@@ -61,7 +61,7 @@ fun SubscriptionChoiceScreen(
                 contentDescription = "на главную",
                 modifier = Modifier
                     .align(Alignment.CenterStart)
-                    .size(48.dp)
+                    .size(40.dp)
                     .clickable { onSuccess() },
                 tint = Color.Unspecified
             )
