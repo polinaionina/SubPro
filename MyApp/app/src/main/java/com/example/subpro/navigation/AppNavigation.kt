@@ -76,7 +76,7 @@ fun AppNavigation(
                     subscriptionId = screen.id
                 )
                 is Screen.TelegramAuth -> TelegramAuthScreen(
-                    serverBaseUrl = "https://droopingly-troughlike-dedra.ngrok-free.dev",
+                    serverBaseUrl = "https://subpro666.duckdns.org",
                     onBack = { currentScreen = Screen.Main },
                     onAuthSuccess = { currentScreen = Screen.Main }
                 )

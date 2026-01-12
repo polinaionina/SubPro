@@ -48,6 +48,7 @@ fun TelegramAuthScreen(
     val prefs = remember { context.getSharedPreferences("auth_prefs", Context.MODE_PRIVATE) }
 
     val startAuth: () -> Unit = {
+        android.util.Log.d("TG_AUTH", "startAuth clicked")
         val deviceId = prefs.getString(
             "local_device_id",
             UUID.randomUUID().toString()
@@ -72,17 +73,36 @@ fun TelegramAuthScreen(
 
             override fun onFailure(call: Call, e: IOException) {
                 e.printStackTrace()
+                android.os.Handler(android.os.Looper.getMainLooper()).post {
+                    android.widget.Toast.makeText(
+                        context,
+                        "Ошибка сети: ${e.message}",
+                        android.widget.Toast.LENGTH_LONG
+                    ).show()
+                }
             }
 
             override fun onResponse(call: Call, response: Response) {
                 val responseBody = response.body?.string() ?: return
-                val loginUrl = JSONObject(responseBody).getString("loginUrl")
+                if (!response.isSuccessful) {
+                    println("Server error: $responseBody")
+                    return
+                }
+
+                val loginUrl = try {
+                    JSONObject(responseBody).getString("loginUrl")
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                    return
+                }
 
                 val intent = Intent(Intent.ACTION_VIEW, Uri.parse(loginUrl)).apply {
                     addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                 }
 
-                context.startActivity(intent)
+                android.os.Handler(android.os.Looper.getMainLooper()).post {
+                    context.startActivity(intent)
+                }
             }
         })
     }
